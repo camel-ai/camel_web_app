@@ -16,11 +16,19 @@
 }
 
 .card {
-  background-color: #f9f9f9; /* 卡片背景颜色 */
+  background-color: #ffffff;
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 1px solid #e0e0e0; /* 边框颜色 */
+  border: 1px solid #e0e0e0;
+}
+
+.card h3 {
+  color: #4B0082;
+}
+
+.card p, .card li {
+  color: #333333;
 }
 
 .form {
@@ -34,16 +42,20 @@
 label {
   display: block;
   margin-bottom: 5px;
-  color: #4B0082; /* 深紫色 */
+  color: #4B0082;
 }
 
 input, select, textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #4B0082; /* 边框颜色 */
+  border: 1px solid #4B0082;
   border-radius: 4px;
-  background-color: #f0f0f0; /* 输入框背景颜色 */
-  color: #333333; /* 输入框字体颜色 */
+  background-color: #ffffff;
+  color: #333333;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #666666;
 }
 
 textarea {
@@ -74,16 +86,18 @@ textarea {
 }
 
 .code-container {
-  background-color: #1e1e1e; /* 代码区域背景颜色 */
+  background-color: #1e1e1e;
   padding: 15px;
   border-radius: 8px;
   overflow-x: auto;
+  margin-bottom: 20px;
 }
 
-pre {
+.code-container pre {
   margin: 0;
-  white-space: pre-wrap; /* 代码换行 */
-  color: #ffffff; /* 代码字体颜色 */
+  white-space: pre-wrap;
+  color: #ffffff;
+  font-family: 'Consolas', 'Monaco', monospace; /* 使用等宽字体 */
 }
 
 .submit-btn {
@@ -103,20 +117,33 @@ pre {
   transform: scale(1.05); /* 悬停时放大 */
 }
 
+.response-panel {
+  flex: 2;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .response-section {
   margin-top: 20px;
-  padding-right: 10px; /* 添加右侧内边距 */
+  padding-right: 10px;
+}
+
+.response-section label {
+  color: #4B0082;
+  font-weight: bold;
 }
 
 .response-section textarea {
-  width: calc(100% - 20px); /* 设置宽度为100%减去左右内边距 */
-  padding: 10px; /* 添加内边距 */
-  border: 1px solid #4B0082; /* 边框颜色 */
-  border-radius: 4px; /* 圆角 */
-  background-color: #f0f0f0; /* 背景颜色 */
-  color: #333333; /* 字体颜色 */
-  resize: none; /* 禁止调整大小 */
-  height: 80px; /* 设置高度 */
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #4B0082;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  resize: none;
+  height: 80px;
 }
 
 .layout {
@@ -127,16 +154,10 @@ pre {
 
 .parameter-panel {
   flex: 1; /* 左侧占据1份 */
-  background-color: #d4d4d4; /* 左侧背景颜色 */
+  background-color: #ffffff;
   padding: 20px; /* 左侧内边距 */
   border-radius: 8px; /* 圆角 */
-}
-
-.response-panel {
-  flex: 2; /* 右侧占据2份 */
-  background-color: #d4d4d4; /* 右侧背景颜色 */
-  padding: 20px; /* 右侧内边距 */
-  border-radius: 8px; /* 圆角 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .short-input {
@@ -171,4 +192,393 @@ pre {
 
 .module-button.active {
   background-color: #6A5ACD; /* 激活状态颜色 */
+}
+
+.section-title {
+  color: #4B0082;
+  font-weight: bold;
+  margin: 20px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #4B0082;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.module-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 添加新的样式 */
+.agent-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.control-btn {
+  background-color: #4B0082;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.agent-list {
+  margin-top: 20px;
+}
+
+.agent-item {
+  background-color: #f0f0f0;
+  border: 1px solid #4B0082;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.remove-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+.progress-section {
+  margin-top: 15px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #4B0082;
+  transition: width 0.3s ease;
+}
+
+.status-text {
+  margin-top: 5px;
+  text-align: center;
+  color: #666666;
+}
+
+.coming-soon {
+  text-align: center;
+  padding: 40px 20px !important;
+}
+
+.coming-soon-content {
+  margin-top: 20px;
+}
+
+.coming-soon p {
+  margin: 10px 0;
+}
+
+.coming-soon .description {
+  color: #666;
+  font-size: 0.9em;
+}
+
+/* 添加新的样式 */
+.file-upload {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.file-upload input[type="file"] {
+  position: absolute;
+  left: -9999px;
+}
+
+.file-upload-label {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #4B0082;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.file-upload-label:hover {
+  background-color: #6A5ACD;
+}
+
+.file-upload-label:active {
+  background-color: #4B0082;
+}
+
+/* 知识库管理样式 */
+.knowledge-base {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.upload-section {
+  text-align: center;
+  padding: 20px;
+  border: 2px dashed #4B0082;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.upload-hint {
+  color: #666666;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.upload-icon {
+  font-size: 1.5em;
+  margin-right: 8px;
+}
+
+.uploaded-files {
+  margin-top: 20px;
+}
+
+.file-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  color: #333333;
+}
+
+.file-item span {
+  color: #333333;
+}
+
+.remove-file {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.remove-file:hover {
+  color: #c82333;
+}
+
+.file-upload-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  padding: 15px 25px;
+}
+
+/* 审批历史样式 */
+.approval-history {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.approval-item {
+  background-color: #727272;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tool-name {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.risk-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.risk-badge.low {
+  background-color: #28a745;
+  color: white;
+}
+
+.risk-badge.high {
+  background-color: #dc3545;
+  color: white;
+}
+
+.approval-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.timestamp {
+  color: #ddd;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+.status-badge.approved {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.rejected {
+  background-color: #dc3545;
+  color: white;
+}
+
+.notification-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.notification-options .checkbox-label {
+  color: #333333;
+}
+
+/* 审批请求样式 */
+.approval-list {
+  margin-top: 15px;
+}
+
+.approval-request {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.request-content {
+  background-color: #ffffff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.request-content p {
+  margin: 0;
+  color: #333333;
+}
+
+.context-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: #666666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.approve-btn, .reject-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.approve-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+.reject-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.reject-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+.uploaded-files h4 {
+  color: #4B0082;
+  margin-bottom: 10px;
 } 
