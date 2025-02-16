@@ -734,63 +734,102 @@ textarea {
 /* 聊天窗口样式 */
 .chat-interface {
   margin-top: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
+  padding: 20px;
+  background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.chat-title {
+/* Module1 和 Module2 特定的聊天样式 */
+.chat-interface:not(.rag-chat) {
+  border: 1px solid #4B0082;
+}
+
+.chat-interface:not(.rag-chat) .chat-message {
   margin-bottom: 10px;
+  max-width: 80%;
+}
+
+.chat-interface:not(.rag-chat) .chat-message.user {
+  margin-left: auto;
+}
+
+.chat-interface:not(.rag-chat) .chat-message.assistant {
+  margin-right: auto;
+}
+
+.chat-interface:not(.rag-chat) .message-content {
+  padding: 10px 15px;
+  border-radius: 15px;
+  background-color: #4B0082;
+  color: white;
+}
+
+.chat-interface:not(.rag-chat) .chat-message.user .message-content {
+  background-color: #6A5ACD;
+}
+
+/* 通用聊天组件样式 */
+.chat-title {
+  margin-bottom: 15px;
+}
+
+.chat-title h3 {
+  color: #4B0082;
+  margin-bottom: 5px;
 }
 
 .chat-hint {
-  font-size: 0.9em;
   color: #666666;
+  font-size: 0.9em;
+  margin: 0;
 }
 
 .chat-history {
-  max-height: 200px;
+  height: 300px;
   overflow-y: auto;
-  margin-bottom: 10px;
-}
-
-.chat-message {
-  margin-bottom: 8px;
-}
-
-.chat-message .message-content {
   padding: 10px;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  background-color: #e0e0e0;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
 }
 
 .chat-input-container {
   display: flex;
   gap: 10px;
+  align-items: flex-start;
 }
 
 .chat-input {
   flex: 1;
+  min-height: 60px;
   padding: 10px;
   border: 1px solid #4B0082;
   border-radius: 4px;
-  background-color: #ffffff;
-  color: #333333;
+  resize: none;
+  font-family: inherit;
 }
 
 .send-button {
-  padding: 10px 15px;
+  padding: 10px 20px;
   background-color: #4B0082;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  height: 60px;
 }
 
-.send-button:hover {
+.send-button:hover:not(:disabled) {
   background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.send-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .loading-spinner {
