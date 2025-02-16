@@ -5,14 +5,14 @@
   border-radius: 8px;
   max-width: 1000px; /* 增加最大宽度 */
   margin: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 更轻的阴影 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .title {
   font-size: 2rem;
   margin-bottom: 20px;
   text-align: center;
-  color: #4B0082; /* 深紫色 */
+  color: #4B0082;
 }
 
 .card {
@@ -36,7 +36,7 @@
 }
 
 .form-group {
-  margin-bottom: 20px; /* 增加表单组之间的间距 */
+  margin-bottom: 20px;
 }
 
 label {
@@ -67,13 +67,13 @@ textarea {
   position: relative;
   display: flex;
   justify-content: flex-end; /* 右对齐 */
-  margin-bottom: 10px; /* 增加底部间距 */
+  margin-bottom: 10px; 
 }
 
 .copy-button {
-  background-color: rgba(75, 0, 130, 0.7); /* 虚化背景颜色 */
-  color: #ffffff; /* 按钮字体颜色 */
-  padding: 5px 10px; /* 按钮内边距 */
+  background-color: rgba(75, 0, 130, 0.7); 
+  color: #ffffff;
+  padding: 5px 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -81,8 +81,8 @@ textarea {
 }
 
 .copy-button:hover {
-  background-color: #4B0082; /* 悬停状态颜色 */
-  transform: scale(1.1); /* 悬停时放大 */
+  background-color: #4B0082;
+  transform: scale(1.1);
 }
 
 .code-container {
@@ -502,13 +502,13 @@ textarea {
   color: #333333;
 }
 
-/* 审批请求样式 */
+
 .approval-list {
   margin-top: 15px;
 }
 
 .approval-request {
-  background-color: #f9f9f9;
+  background-color: #c4c4c4;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
@@ -559,7 +559,7 @@ textarea {
 }
 
 .approve-btn {
-  background-color: #28a745;
+  background-color: #36924b;
   color: white;
 }
 
@@ -569,7 +569,7 @@ textarea {
 }
 
 .reject-btn {
-  background-color: #dc3545;
+  background-color: #b23a46;
   color: white;
 }
 
@@ -581,4 +581,596 @@ textarea {
 .uploaded-files h4 {
   color: #4B0082;
   margin-bottom: 10px;
+}
+
+/* RAG节点图样式 */
+.graph-visualization {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.graph-visualization h3 {
+  color: #4B0082;
+  margin-bottom: 15px;
+}
+
+.graph-container {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+.graph-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.node {
+  fill: #4B0082;
+  stroke: none;
+}
+
+.node.main-node {
+  fill: #6A5ACD;
+}
+
+.node.camel-node {
+  fill: #61dafb;
+}
+
+.node.entity-node {
+  fill: #28a745;
+}
+
+.node.relation-node {
+  fill: #dc3545;
+}
+
+.node.model-node {
+  fill: #ffc107;
+}
+
+.node-text {
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-size: 14px;
+  font-weight: bold;
+  paint-order: stroke;
+  stroke: #000000;
+  stroke-width: 1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.node-text.main-text {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.connection {
+  stroke: #4B0082;
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+}
+
+/* 文件上传按钮样式 */
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: #4B0082;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-button:hover {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.upload-icon {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+/* 滑块样式 */
+.slider {
+  width: 100%;
+  height: 4px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4B0082;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-value {
+  margin-left: 10px;
+  color: #4B0082;
+  font-weight: bold;
+}
+
+/* 文件列表样式 */
+.file-list {
+  margin-top: 15px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.remove-btn:hover {
+  color: #c82333;
+}
+
+/* 聊天界面样式 */
+.chat-interface {
+  margin-top: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.chat-title {
+  margin-bottom: 15px;
+}
+
+.chat-title h3 {
+  color: #4B0082;
+  margin-bottom: 5px;
+}
+
+.chat-hint {
+  color: #666666;
+  font-size: 0.9em;
+  margin: 0;
+}
+
+.chat-history {
+  height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  max-width: 80%;
+}
+
+.chat-message.user {
+  margin-left: auto;
+}
+
+.chat-message.assistant {
+  margin-right: auto;
+}
+
+.message-content {
+  padding: 10px 15px;
+  border-radius: 15px;
+  background-color: #4B0082;
+  color: white;
+}
+
+.chat-message.user .message-content {
+  background-color: #6A5ACD;
+}
+
+.chat-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.chat-input {
+  flex: 1;
+  min-height: 60px;
+  padding: 10px;
+  border: 1px solid #4B0082;
+  border-radius: 4px;
+  resize: none;
+  font-family: inherit;
+}
+
+.send-button {
+  padding: 10px 20px;
+  background-color: #4B0082;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 60px;
+}
+
+.send-button:hover:not(:disabled) {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.send-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* RAG 操作按钮样式 */
+.rag-action {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.start-rag-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 25px;
+  background-color: #4B0082;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-rag-btn:hover:not(:disabled) {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.start-rag-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.start-rag-btn .icon {
+  font-size: 1.2em;
+}
+
+.status-message {
+  margin-top: 10px;
+  color: #666666;
+  font-size: 0.9em;
+}
+
+/* 更新加载动画样式 */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s linear infinite;
+}
+
+/* 代理配置样式 */
+.agent-config {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.agent-config h4 {
+  color: #4B0082;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.tools-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tools-selection .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tools-selection input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+/* Agent 管理按钮样式 */
+.agent-management {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-agent-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background-color: #4B0082;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.add-agent-btn:hover {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.add-agent-btn .icon {
+  font-size: 1.2em;
+}
+
+/* Agent 配置卡片样式 */
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.remove-agent-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.3s ease;
+}
+
+.remove-agent-btn:hover {
+  color: #c82333;
+  transform: scale(1.1);
+}
+
+.tools-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #4B0082;
+  font-weight: bold;
+}
+
+/* 工作流控制样式 */
+.workflow-control {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  color: #4B0082;
+  font-weight: bold;
+}
+
+.progress-percentage {
+  color: #666666;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4B0082;
+  transition: width 0.3s ease;
+}
+
+.progress-status {
+  margin-top: 8px;
+  color: #666666;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.start-workflow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 25px;
+  background-color: #4B0082;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.start-workflow-btn:hover:not(:disabled) {
+  background-color: #6A5ACD;
+  transform: translateY(-2px);
+}
+
+.start-workflow-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.start-workflow-btn .icon {
+  font-size: 1.2em;
+}
+
+/* Workforce 可视化样式 */
+.workforce-visualization {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workforce-visualization h3 {
+  color: #4B0082;
+  margin-bottom: 15px;
+}
+
+.workflow-container {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.workflow-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.node.workforce-node {
+  fill: #4B0082;
+}
+
+.node.single-agent-node {
+  fill: #28a745;
+}
+
+.node.pair-agent-node {
+  fill: #6A5ACD;
+}
+
+.connection {
+  stroke: #4B0082;
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+}
+
+.connection.active {
+  stroke: #ffc107;
+  stroke-width: 3;
+  stroke-dasharray: none;
+  animation: pulse 1.5s infinite;
+}
+
+.task-indicator {
+  opacity: 0.9;
+}
+
+.task-status {
+  fill: #ffffff;
+  stroke: #4B0082;
+  stroke-width: 2;
+}
+
+.task-status-text {
+  fill: #4B0082;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #ffffff;
+}
+
+.task-flow .task-label {
+  fill: #333333;
+  text-anchor: middle;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.progress-ring {
+  fill: none;
+  stroke: #ffc107;
+  stroke-width: 3;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+@keyframes pulse {
+  0% {
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-opacity: 0.5;
+  }
+  100% {
+    stroke-opacity: 1;
+  }
 } 
