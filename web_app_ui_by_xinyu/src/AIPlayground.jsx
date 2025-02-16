@@ -1423,144 +1423,27 @@ print("Activity history:", history)
   const renderResponsePanel = () => {
     return (
       <div className="response-panel">
-        {/* Module3 的 Workforce 可视化 */}
-        {activeModule === 'Module3' && (
-          <div className="workforce-visualization">
-            <h3>Workforce Flow Visualization</h3>
-            <div className="workflow-container">
-              <svg className="workflow-svg" viewBox="0 0 800 400">
-                {/* Workforce 中心节点 */}
-                <circle cx="400" cy="200" r="45" className="node workforce-node" />
-                <text x="400" y="200" className="node-text">
-                  {workforceName || 'Workforce'}
-                </text>
-
-                {/* 动态生成 Agent 节点 */}
-                {agents.map((agent, index) => {
-                  const angle = (2 * Math.PI * index) / agents.length;
-                  const radius = 150;
-                  const x = 400 + radius * Math.cos(angle);
-                  const y = 200 + radius * Math.sin(angle);
-
-                  return (
-                    <g key={agent.id}>
-                      {/* Agent 节点 */}
-                      <circle 
-                        cx={x} 
-                        cy={y} 
-                        r="35" 
-                        className={`node ${agent.type === 'single' ? 'single-agent-node' : 'pair-agent-node'}`}
-                      />
-                      <text x={x} y={y} className="node-text">
-                        {agent.type === 'single' ? agent.name : 'Role Pair'}
-                      </text>
-                      
-                      {/* 连接线 */}
-                      <line 
-                        x1="400" 
-                        y1="200" 
-                        x2={x} 
-                        y2={y} 
-                        className={`connection ${isLoading ? 'active' : ''}`} 
-                      />
-
-                      {/* 任务状态指示器 */}
-                      {isLoading && (
-                        <g className="task-indicator">
-                          <circle 
-                            cx={x + 40} 
-                            cy={y - 40} 
-                            r="15" 
-                            className="task-status"
-                          />
-                          <text 
-                            x={x + 40} 
-                            y={y - 40} 
-                            className="task-status-text"
-                          >
-                            {workflowProgress >= (index + 1) * (100 / agents.length) ? '✓' : '...'}
-                          </text>
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
-
-                {/* Task 指示器 */}
-                {isLoading && (
-                  <g className="task-flow">
-                    <text x="400" y="150" className="task-label">
-                      {currentStep}
-                    </text>
-                    <circle 
-                      cx="400" 
-                      cy="200" 
-                      r="55" 
-                      className="progress-ring"
-                      style={{
-                        strokeDasharray: `${workflowProgress * 3.45}, 345`
-                      }}
-                    />
-                  </g>
-                )}
-              </svg>
+        {/* Module1 的代码块 */}
+        {activeModule === 'Module1' && (
+          <div className="code-container">
+            <div className="copy-button-container">
+              <button
+                className={`copy-button ${copySuccess ? 'success' : ''}`}
+                onClick={copyCode}
+              >
+                {copySuccess ? 'Copied!' : 'Copy'}
+              </button>
             </div>
+            <pre><code>{getModuleCode(activeModule)}</code></pre>
           </div>
         )}
 
-        {/* Module5 的知识图谱可视化 */}
-        {activeModule === 'Module5' && (
-          <div className="graph-visualization">
-            <h3>Knowledge Graph Visualization</h3>
-            <div className="graph-container">
-              <svg className="graph-svg" viewBox="0 0 800 400">
-                {/* 中心节点 - Knowledge Graph */}
-                <circle cx="400" cy="200" r="40" className="node main-node" />
-                <text x="400" y="200" className="node-text main-text">Knowledge Graph</text>
-                
-                {/* CAMEL 节点 */}
-                <circle cx="400" cy="80" r="35" className="node camel-node" />
-                <text x="400" y="80" className="node-text">CAMEL</text>
-                <line x1="400" y1="120" x2="400" y2="160" className="connection" />
-                
-                {/* Entities 节点 */}
-                <circle cx="250" cy="200" r="35" className="node entity-node" />
-                <text x="250" y="200" className="node-text">Entities</text>
-                <line x1="285" y1="200" x2="360" y2="200" className="connection" />
-                
-                {/* Relations 节点 */}
-                <circle cx="550" cy="200" r="35" className="node relation-node" />
-                <text x="550" y="200" className="node-text">Relations</text>
-                <line x1="440" y1="200" x2="515" y2="200" className="connection" />
-                
-                {/* Model 节点 */}
-                <circle cx="400" cy="320" r="35" className="node model-node" />
-                <text x="400" y="320" className="node-text">Model</text>
-                <line x1="400" y1="240" x2="400" y2="285" className="connection" />
-              </svg>
-            </div>
-          </div>
-        )}
-
-        {/* 代码容器 */}
-        <div className="code-container">
-          <div className="copy-button-container">
-            <button
-              className={`copy-button ${copySuccess ? 'success' : ''}`}
-              onClick={copyCode}
-            >
-              {copySuccess ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <pre><code>{getModuleCode(activeModule)}</code></pre>
-        </div>
-
-        {/* Module5 的聊天界面 */}
-        {activeModule === 'Module5' && (
+        {/* 聊天窗口 */}
+        {activeModule === 'Module1' && (
           <div className="chat-interface">
             <div className="chat-title">
-              <h3>Chat with RAG-Enhanced AI</h3>
-              <p className="chat-hint">Ask questions about your uploaded documents</p>
+              <h3>Chat with AI</h3>
+              <p className="chat-hint">Ask questions about the code or functionality</p>
             </div>
             
             <div className="chat-history">
@@ -1576,7 +1459,7 @@ print("Activity history:", history)
                 className="chat-input"
                 value={userMessage}
                 onChange={(e) => setUserMessage(e.target.value)}
-                placeholder="Ask a question about your documents..."
+                placeholder="Ask a question about the code..."
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
