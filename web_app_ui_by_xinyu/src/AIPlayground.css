@@ -3,7 +3,7 @@
   color: #333333; /* 字体颜色 */
   padding: 40px; /* 增加内边距 */
   border-radius: 8px;
-  max-width: 1000px; /* 增加最大宽度 */
+  max-width: 95%; /* 增加最大宽度 */
   margin: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -67,7 +67,7 @@ textarea {
   position: relative;
   display: flex;
   justify-content: flex-end; /* 右对齐 */
-  margin-bottom: 10px; 
+  /* margin-bottom: 10px;  */
 }
 
 .copy-button {
@@ -91,13 +91,17 @@ textarea {
   border-radius: 8px;
   overflow-x: auto;
   margin-bottom: 20px;
+  max-width: 100%; /* 固定最大宽度 */
+  height: 400px;
 }
 
 .code-container pre {
-  margin: 0;
-  white-space: pre-wrap;
+  /* margin: 0; */
+  /* white-space: pre-wrap; */
   color: #ffffff;
   font-family: 'Consolas', 'Monaco', monospace; /* 使用等宽字体 */
+  /* leave 5px left margin */
+  margin-left: 15px;
 }
 
 .submit-btn {
@@ -118,11 +122,12 @@ textarea {
 }
 
 .response-panel {
-  flex: 2;
+  flex: 2; /* 右侧占据2份 */
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px; /* 固定最大宽度 */
 }
 
 .response-section {
@@ -158,10 +163,33 @@ textarea {
   padding: 20px; /* 左侧内边距 */
   border-radius: 8px; /* 圆角 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px; /* 固定最大宽度 */
+}
+
+.short-select {
+  width: 95%; /* 设置选择框宽度 */
+}
+
+.short-select:hover {
+  color: #ffffff;
+  background-color: #9c66c3;
+  transition: all 0.3s ease;
 }
 
 .short-input {
   width: 90%; /* 设置输入框宽度 */
+}
+
+.short-input:hover {
+  color: #ffffff;
+  background-color: #9c66c3;
+  transition: all 0.3s ease;
+}
+
+.short-input-disabled {
+  width: 90%; /* 设置输入框宽度 */
+  background-color: #e0e0e0; /* 设置输入框背景颜色 */
+  color: #666666; /* 设置输入框字体颜色 */
 }
 
 .short-textarea {
@@ -172,7 +200,8 @@ textarea {
 .module-buttons {
   display: flex;
   flex-direction: column; /* 垂直排列 */
-  margin-right: 20px; /* 右侧间距 */
+  margin-right: 5px; /* 右侧间距 */
+  width: 80px; /* 固定宽度 */
 }
 
 .module-button {
@@ -180,10 +209,10 @@ textarea {
   color: #ffffff; /* 按钮字体颜色 */
   padding: 10px; /* 按钮内边距 */
   border: none;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
-  margin-bottom: 10px; /* 按钮之间的间距 */
-  transition: background-color 0.3s; /* 添加动效 */
+  margin-bottom: 1px; /* 按钮之间的间距 */
+  transition: background-color 0.2s; /* 添加动效 */
 }
 
 .module-button:hover {
@@ -1178,4 +1207,83 @@ textarea {
   100% {
     stroke-opacity: 1;
   }
+}
+
+.toolkit-options {
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  gap: 10px; /* 增加间距 */
+  margin-bottom: 20px; /* 增加底部间距 */
+}
+
+.checkbox-label:hover {
+  background-color: #b893d3;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 5px;
+  margin-bottom: 0px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto; /* 使复选框宽度自适应 */
+  margin-right: 8px; /* 增加右侧间距 */
+}
+
+.tab-container {
+  display: flex;
+  gap: 10px; /* 增加标签之间的间距 */
+  margin-bottom: 20px; /* 增加底部间距 */
+  width: 100%; /* 固定宽度 */
+}
+
+.tab-button {
+  background-color: #4B0082; /* 按钮背景颜色 */
+  color: #ffffff; /* 按钮字体颜色 */
+  padding: 10px; /* 按钮内边距 */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s; /* 添加动效 */
+  width: 150px; /* 固定宽度 */
+}
+
+.tab-button:hover {
+  background-color: #6A5ACD; /* 悬停状态颜色 */
+}
+
+.tab-button.active {
+  background-color: #6A5ACD; /* 激活状态颜色 */
+}
+
+.toolkit-label {
+  display: flex;
+  justify-content: space-between; /* 使标签和箭头分开 */
+  align-items: center; /* 垂直居中 */
+  cursor: pointer; /* 鼠标悬停时显示为手型 */
+  padding: 10px;
+}
+
+.toolkit-label:hover {
+  color: #e0bbff; /* 悬停时颜色变化 */
+  background-color: #4c236a;
+  transition: all 0.3s ease;
+}
+
+.arrow {
+  margin-left: 10px; /* 箭头与标签之间的间距 */
+  font-size: 1.2em; /* 箭头大小 */
+}
+
+.arrow.open {
+  transform: rotate(180deg); /* 打开时旋转箭头 */
+}
+
+.arrow.closed {
+  transform: rotate(0deg); /* 关闭时不旋转 */
 } 

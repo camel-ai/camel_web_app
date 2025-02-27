@@ -5,6 +5,8 @@ const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
   const [platformType, setPlatformType] = useState('OPENAI');
   const [modelType, setModelType] = useState('GPT_4');
+  const [temperature, setTemperature] = useState(0.4);
+  const [maxTokens, setMaxTokens] = useState(4096);
   const [apiKey, setApiKey] = useState('');
   const [systemMessage, setSystemMessage] = useState('');
   const [userMessage, setUserMessage] = useState('');
@@ -113,11 +115,51 @@ const AIPlayground = () => {
   const [selectedTools, setSelectedTools] = useState({
     search: true,
     weather: true,
-    maps: true
+    maps: true,
+    math: false,
+    twitter: false,
+    retrieval: false,
+    slack: false,
+    linkedin: false,
+    reddit: false,
   });
+  const [assistantSelectedToolkits, setAssistantSelectedToolkits] = useState(
+    {
+      search: true,
+      weather: true,
+      maps: true,
+      math: false,
+      twitter: false,
+      retrieval: false,
+      slack: false,
+      linkedin: false,
+      reddit: false,
+    }
+  );
+  const [userSelectedToolkits, setUserSelectedToolkits] = useState(
+    {
+      search: true,
+      weather: true,
+      maps: true,
+      math: false,
+      twitter: false,
+      retrieval: false,
+      slack: false,
+      linkedin: false,
+      reddit: false,
+    }
+  );
   const [taskId, setTaskId] = useState('task_001');
   const [workflowProgress, setWorkflowProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [toolkits, setToolkits] = useState([]);
+  const [useCustomModel, setUseCustomModel] = useState(false);
+  const [apiType, setApiType] = useState('camel'); // 用于选择 API 类型
+  const [customModel, setCustomModel] = useState(''); // 用于自定义模型
+  const [showToolkits, setShowToolkits] = useState(false); // 用于Module1中控制工具包列表的显示
+  const [showAssistantToolkits, setShowAssistantToolkits] = useState(false); // 用于Module2中Assistant工具包列表的显示
+  const [showUserToolkits, setShowUserToolkits] = useState(false); // 用于Module2中User工具包列表的显示
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -196,20 +238,21 @@ const AIPlayground = () => {
   const getModuleCode = (moduleType) => {
     switch (moduleType) {
       case 'Module1':
-        return `
-from camel.agents import ChatAgent
+        return `from camel.agents import ChatAgent
 from camel.configs import ChatGPTConfig
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
 
-o1_model = ModelFactory.create(
-    model_platform=ModelPlatformType.${platformType},
-    model_type=ModelType.${modelType},
-    model_config_dict=ChatGPTConfig(temperature=0.0).as_dict(),
+model = ModelFactory.create(
+  model_platform=ModelPlatformType.${platformType},
+  model_type=ModelType.${modelType},
+  api_key="${apiKey}",
+  url="${baseUrl}",
+  model_config_dict=ChatGPTConfig(temperature=0.0).as_dict(),(temperature=0.0).as_dict(),
 )
 
 camel_agent = ChatAgent(
-    model=o1_model,
+    model=model,
     system_message="${systemMessage || 'Default system message'}"
 )
 user_msg = "${userMessage || 'Your user message here'}"
@@ -218,8 +261,7 @@ print(response.msgs[0].content)
 `;
 
       case 'Module2':
-        return `
-from camel.agents import RolePlaying
+        return `from camel.agents import RolePlaying
 from camel.configs import ChatGPTConfig
 from camel.models import ModelFactory
 
@@ -233,13 +275,14 @@ role_playing = RolePlaying(
 )
 
 # Start the conversation
-response = role_playing.start()
-print(response.assistant_message)
+while True:
+    user_input = input("User: ")
+    response = role_playing.step(user_input)
+    print(f"Assistant: {response.assistant_message}")
 `;
 
       case 'Module3':
-        return `
-from camel.agents import ChatAgent
+        return `from camel.agents import ChatAgent
 from camel.messages import BaseMessage
 from camel.models import ModelFactory
 from camel.societies import Workforce
@@ -248,6 +291,12 @@ from camel.toolkits import (
     GoogleMapsToolkit,
     SearchToolkit,
     WeatherToolkit,
+    MathToolkit,
+    TwitterToolkit,
+    RetrievalToolkit,
+    SlackToolkit,
+    LinkedInToolkit,
+    RedditToolkit,
 )
 from camel.types import ModelPlatformType, ModelType
 
@@ -328,14 +377,12 @@ print('Task Result:', result.result)
 `;
 
       case 'Module4':
-        return `
-# Agentic Synthetic Data Generation
+        return `# Agentic Synthetic Data Generation
 # Coming soon...
 `;
 
       case 'Module5':
-        return `
-# RAG (Retrieval-Augmented Generation) Implementation
+        return `# RAG (Retrieval-Augmented Generation) Implementation
 from camel.embeddings import OpenAIEmbedding
 from camel.retrievers import AutoRetriever
 from camel.storages import QdrantStorage
@@ -426,8 +473,7 @@ print(combined_results)
 `;
 
       case 'Module6':
-        return `
-from camel.human import HumanLayer
+        return `from camel.human import HumanLayer
 from camel.agents import ChatAgent
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
@@ -707,15 +753,267 @@ print("Activity history:", history)
               <ul>
                 <li>Select your preferred model platform and type</li>
                 <li>Enter your API key for authentication</li>
+                <li>Enter the Base URL for API calls</li>
                 <li>Customize the system message to define agent behavior</li>
                 <li>Input your user message to interact with the agent</li>
+                <li>Select your preferred toolkits</li>
               </ul>
             </div>
 
             <div className="form">
+              {/* API 类型选择标签页 */}
+              <div className="tab-container">
+                <button 
+                  className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
+                  onClick={() => setApiType('camel')}
+                >
+                  CAMEL-supported model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
+                  onClick={() => setApiType('custom')}
+                >
+                  Custom model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
+                  onClick={() => setApiType('openai')}
+                >
+                  OpenAI compatible API
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
+                  onClick={() => setApiType('on-device')}
+                >
+                  On-Device Opensource Model
+                </button>
+              </div>
+
+              {/* Available Toolkits */}
+              <div className="form-group">
+                <label className="toolkit-label" onClick={() => setShowToolkits(prev => !prev)}>
+                  Available Toolkits
+                  <span 
+                    className={`arrow ${showToolkits ? 'open' : 'closed'}`} 
+                  >
+                    {showToolkits ? '▲' : '▼'}
+                  </span>
+                </label>
+                {showToolkits && (
+                  <div className="toolkit-options">
+                    {Object.keys(selectedTools).map(tool => (
+                      <label key={tool} className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={selectedTools[tool]}
+                          onChange={(e) => setSelectedTools(prev => ({
+                            ...prev,
+                            [tool]: e.target.checked
+                          }))}
+                        />
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 根据选择的 API 类型渲染不同的输入框 */}
+              {apiType === 'camel' && (
+                <>
+                  {/* CAMEL supported model */}
+                  <div className="form-group">
+                    <label htmlFor="platform">model_platform</label>
+                    <select
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      className="short-select"
+                    >
+                      {platformOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="model">model_type</label>
+                    <select
+                      id="model"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      className="short-select"
+                    >
+                      {modelOptions[platformType]?.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {apiType === 'custom' && (
+                <>
+                  <div className="form-group">
+                    <label>model_platform</label>
+                    <input
+                      type="text"
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      placeholder="Enter model platform"
+                      className="short-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="customModel">model_name</label>
+                    <input
+                      type="text"
+                      id="customModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter model name"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'openai' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleApiKey">api_key</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleApiKey"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="Enter openai-compatible API key"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleBaseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter openai-compatible base URL"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleModelType">model_type</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleModelType"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter openai-compatible model type"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="temperature">temperature</label>
+                    <input
+                      type="text"
+                      id="temperature"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="maxTokens">max_tokens</label>
+                    <input
+                      type="text"
+                      id="maxTokens"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'on-device' && (
+                <>
+                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_platform</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value="ollama"
+                      className="short-input-disabled"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_name</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter on-device model name"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">base_url</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base url"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">temperature</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">max_tokens</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
               {/* API Key 输入 */}
               <div className="form-group">
-                <label htmlFor="apiKey">API Key</label>
+                <label htmlFor="apiKey">api_key</label>
                 <input
                   type="text"
                   id="apiKey"
@@ -726,48 +1024,29 @@ print("Activity history:", history)
                 />
               </div>
 
-              {/* Agent Prompt 输入 */}
+              {/* Base URL 输入 */}
               <div className="form-group">
-                <label htmlFor="agentPrompt">Agent Prompt</label>
+                <label htmlFor="baseUrl">Base URL</label>
+                <input
+                  type="text"
+                  id="baseUrl"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="Enter the base URL"
+                  className="short-input"
+                />
+              </div>
+
+              {/* Agent Prompt 输入（重命名为系统消息） */}
+              <div className="form-group">
+                <label htmlFor="agentPrompt">System Message</label>
                 <textarea
                   id="agentPrompt"
                   value={systemMessage}
                   onChange={(e) => setSystemMessage(e.target.value)}
-                  placeholder="Enter agent prompt here..."
+                  placeholder="Enter system message here..."
                   className="short-textarea"
                 />
-              </div>
-
-              {/* 平台选择 */}
-              <div className="form-group">
-                <label htmlFor="platform">Platform Type</label>
-                <select
-                  id="platform"
-                  value={platformType}
-                  onChange={(e) => setPlatformType(e.target.value)}
-                >
-                  {platformOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 模型选择 */}
-              <div className="form-group">
-                <label htmlFor="model">Model Type</label>
-                <select
-                  id="model"
-                  value={modelType}
-                  onChange={(e) => setModelType(e.target.value)}
-                >
-                  {modelOptions[platformType]?.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>
@@ -777,8 +1056,8 @@ print("Activity history:", history)
         return (
           <div className="module-content">
             <div className="card">
-              <h3>Role Playing Session Configuration</h3>
-              <p>Configure your role-playing session with the following parameters:</p>
+              <h3>Configure your role-playing session with the following parameters:</h3>
+              
             </div>
 
             <div className="form">
@@ -796,78 +1075,591 @@ print("Activity history:", history)
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="outputLanguage">Output Language</label>
-                <select
-                  id="outputLanguage"
-                  value={outputLanguage}
-                  onChange={(e) => setOutputLanguage(e.target.value)}
-                >
-                  {languageOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Assistant Agent Configuration */}
               <div className="section-title">Assistant Agent</div>
-              
+              <div className="form">
+              {/* API 类型选择标签页 */}
+              <div className="tab-container">
+                <button 
+                  className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
+                  onClick={() => setApiType('camel')}
+                >
+                  CAMEL-supported model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
+                  onClick={() => setApiType('custom')}
+                >
+                  Custom model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
+                  onClick={() => setApiType('openai')}
+                >
+                  OpenAI compatible API
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
+                  onClick={() => setApiType('on-device')}
+                >
+                  On-Device Opensource Model
+                </button>
+              </div>
+
+              {/* Available Toolkits */}
               <div className="form-group">
-                <label htmlFor="assistantRole">Role Name</label>
+                <label className="toolkit-label" onClick={() => setShowAssistantToolkits(prev => !prev)}>
+                  Available Toolkits
+                  <span 
+                    className={`arrow ${showAssistantToolkits ? 'open' : 'closed'}`} 
+                    
+                  >
+                    {showAssistantToolkits ? '▲' : '▼'}
+                  </span>
+                </label>
+                {showAssistantToolkits && (
+                  <div className="toolkit-options">
+                    {Object.keys(assistantSelectedToolkits).map(tool => (
+                      <label key={tool} className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={assistantSelectedToolkits[tool]}
+                          onChange={(e) => setAssistantSelectedToolkits(prev => ({
+                            ...prev,
+                            [tool]: e.target.checked
+                          }))}
+                        />
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 根据选择的 API 类型渲染不同的输入框 */}
+              {apiType === 'camel' && (
+                <>
+                  {/* CAMEL supported model */}
+                  <div className="form-group">
+                    <label htmlFor="platform">model_platform</label>
+                    <select
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      className="short-select"
+                    >
+                      {platformOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="model">model_type</label>
+                    <select
+                      id="model"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      className="short-select"
+                    >
+                      {modelOptions[platformType]?.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {apiType === 'custom' && (
+                <>
+                  <div className="form-group">
+                    <label>model_platform</label>
+                    <input
+                      type="text"
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      placeholder="Enter model platform"
+                      className="short-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="customModel">model_name</label>
+                    <input
+                      type="text"
+                      id="customModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter model name"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'openai' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleApiKey">api_key</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleApiKey"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="Enter openai-compatible API key"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleBaseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter openai-compatible base URL"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleModelType">model_type</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleModelType"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter openai-compatible model type"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="temperature">temperature</label>
+                    <input
+                      type="text"
+                      id="temperature"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="maxTokens">max_tokens</label>
+                    <input
+                      type="text"
+                      id="maxTokens"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'on-device' && (
+                <>
+                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_platform</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value="ollama"
+                      className="short-input-disabled"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_name</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter on-device model name"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">base_url</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base url"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">temperature</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">max_tokens</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* API Key 输入 */}
+              <div className="form-group">
+                <label htmlFor="apiKey">api_key</label>
                 <input
                   type="text"
-                  id="assistantRole"
-                  value={assistantRole}
-                  onChange={(e) => setAssistantRole(e.target.value)}
-                  placeholder="Enter assistant role name"
+                  id="apiKey"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your API key"
                   className="short-input"
                 />
               </div>
 
-              {/* Model Configuration (重用 Module 1 的配置) */}
+              {/* Base URL 输入 */}
               <div className="form-group">
-                <label htmlFor="platform">Platform Type</label>
-                <select
-                  id="platform"
-                  value={platformType}
-                  onChange={(e) => setPlatformType(e.target.value)}
-                >
-                  {platformOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="baseUrl">Base URL</label>
+                <input
+                  type="text"
+                  id="baseUrl"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="Enter the base URL"
+                  className="short-input"
+                />
               </div>
+
+              {/* Agent Prompt 输入（重命名为系统消息） */}
+              <div className="form-group">
+                <label htmlFor="agentPrompt">System Message</label>
+                <textarea
+                  id="agentPrompt"
+                  value={systemMessage}
+                  onChange={(e) => setSystemMessage(e.target.value)}
+                  placeholder="Enter system message here..."
+                  className="short-textarea"
+                />
+              </div>
+            </div>
+              
 
               {/* User Agent Configuration */}
               <div className="section-title">User Agent</div>
-              
+              <div className="form">
+              {/* API 类型选择标签页 */}
+              <div className="tab-container">
+                <button 
+                  className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
+                  onClick={() => setApiType('camel')}
+                >
+                  CAMEL-supported model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
+                  onClick={() => setApiType('custom')}
+                >
+                  Custom model
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
+                  onClick={() => setApiType('openai')}
+                >
+                  OpenAI compatible API
+                </button>
+                <button 
+                  className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
+                  onClick={() => setApiType('on-device')}
+                >
+                  On-Device Opensource Model
+                </button>
+              </div>
+
+              {/* Available Toolkits */}
               <div className="form-group">
-                <label htmlFor="userRole">Role Name</label>
+                <label className="toolkit-label" onClick={() => setShowUserToolkits(prev => !prev)}>
+                  Available Toolkits
+                  <span 
+                    className={`arrow ${showUserToolkits ? 'open' : 'closed'}`} 
+                  >
+                    {showUserToolkits ? '▲' : '▼'}
+                  </span>
+                </label>
+                {showUserToolkits && (
+                  <div className="toolkit-options">
+                    {Object.keys(userSelectedToolkits).map(tool => (
+                      <label key={tool} className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={userSelectedToolkits[tool]}
+                          onChange={(e) => setUserSelectedToolkits(prev => ({
+                            ...prev,
+                            [tool]: e.target.checked
+                          }))}
+                        />
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 根据选择的 API 类型渲染不同的输入框 */}
+              {apiType === 'camel' && (
+                <>
+                  {/* CAMEL supported model */}
+                  <div className="form-group">
+                    <label htmlFor="platform">model_platform</label>
+                    <select
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      className="short-select"
+                    >
+                      {platformOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="model">model_type</label>
+                    <select
+                      id="model"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      className="short-select"
+                    >
+                      {modelOptions[platformType]?.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {apiType === 'custom' && (
+                <>
+                  <div className="form-group">
+                    <label>model_platform</label>
+                    <input
+                      type="text"
+                      id="platform"
+                      value={platformType}
+                      onChange={(e) => setPlatformType(e.target.value)}
+                      placeholder="Enter model platform"
+                      className="short-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="customModel">model_name</label>
+                    <input
+                      type="text"
+                      id="customModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter model name"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'openai' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleApiKey">api_key</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleApiKey"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="Enter openai-compatible API key"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleBaseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter openai-compatible base URL"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="openaicompatibleModelType">model_type</label>
+                    <input
+                      type="text"
+                      id="openaicompatibleModelType"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter openai-compatible model type"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="temperature">temperature</label>
+                    <input
+                      type="text"
+                      id="temperature"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="maxTokens">max_tokens</label>
+                    <input
+                      type="text"
+                      id="maxTokens"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {apiType === 'on-device' && (
+                <>
+                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_platform</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value="ollama"
+                      className="short-input-disabled"
+                      disabled
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceModel">model_name</label>
+                    <input
+                      type="text"
+                      id="onDeviceModel"
+                      value={modelType}
+                      onChange={(e) => setModelType(e.target.value)}
+                      placeholder="Enter on-device model name"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">base_url</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base url"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">temperature</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={temperature}
+                      onChange={(e) => setTemperature(e.target.value)}
+                      placeholder="Enter temperature"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="onDeviceConfig">max_tokens</label>
+                    <input
+                      type="text"
+                      id="onDeviceConfig"
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(e.target.value)}
+                      placeholder="Enter max tokens"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* API Key 输入 */}
+              <div className="form-group">
+                <label htmlFor="apiKey">api_key</label>
                 <input
                   type="text"
-                  id="userRole"
-                  value={userRole}
-                  onChange={(e) => setUserRole(e.target.value)}
-                  placeholder="Enter user role name"
+                  id="apiKey"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your API key"
                   className="short-input"
                 />
               </div>
 
-              {/* Critic Agent Toggle */}
+              {/* Base URL 输入 */}
               <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={enableCritic}
-                    onChange={(e) => setEnableCritic(e.target.checked)}
-                  />
-                  Enable Critic Agent for evaluation
-                </label>
+                <label htmlFor="baseUrl">Base URL</label>
+                <input
+                  type="text"
+                  id="baseUrl"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="Enter the base URL"
+                  className="short-input"
+                />
               </div>
+
+              {/* Agent Prompt 输入（重命名为系统消息） */}
+              <div className="form-group">
+                <label htmlFor="agentPrompt">System Message</label>
+                <textarea
+                  id="agentPrompt"
+                  value={systemMessage}
+                  onChange={(e) => setSystemMessage(e.target.value)}
+                  placeholder="Enter system message here..."
+                  className="short-textarea"
+                />
+              </div>
+            </div>
             </div>
           </div>
         );
@@ -884,7 +1676,7 @@ print("Activity history:", history)
               {/* Workforce Basic Settings */}
               <div className="section-title">Workforce Settings</div>
               <div className="form-group">
-                <label>Workforce Name</label>
+                <label>Workforce Description</label>
                 <input
                   type="text"
                   value={workforceName}
@@ -1002,6 +1794,55 @@ print("Activity history:", history)
                           />
                           Google Maps Tools
                         </label>
+                        <label className="checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('math')}
+                            onChange={(e) => handleToolToggle(index, 'math', e.target.checked)}
+                          />
+                          MathToolkit
+                        </label>
+                        <label className="checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('twitter')}
+                            onChange={(e) => handleToolToggle(index, 'twitter', e.target.checked)}
+                          />
+                          TwitterToolkit
+                        </label>
+                        <label className="checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('retrieval')}
+                            onChange={(e) => handleToolToggle(index, 'retrieval', e.target.checked)}
+                          />
+                          RetrievalToolkit
+                        </label>
+                        <label className="checkbox-label"> 
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('slack')}
+                            onChange={(e) => handleToolToggle(index, 'slack', e.target.checked)}
+                          />
+                          SlackToolkit
+                        </label>
+                        <label className="checkbox-label"> 
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('linkedin')}
+                            onChange={(e) => handleToolToggle(index, 'linkedin', e.target.checked)}
+                          />
+                          LinkedInToolkit
+                        </label>
+                        <label className="checkbox-label"> 
+                          <input
+                            type="checkbox"
+                            checked={agent.tools.includes('reddit')}
+                            onChange={(e) => handleToolToggle(index, 'reddit', e.target.checked)}
+                          />
+                          RedditToolkit
+                        </label>
+                      
                       </div>
                     </div>
                   </div>
