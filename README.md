@@ -79,7 +79,13 @@ git clone https://github.com/camel-ai/camel_web_app.git
 
 ### Configure
 
-You can then update configs in the `.env` files to customize your configurations.
+Copy the `.env.example` files to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Then you can then update configs in the `.env` files to customize your configurations.
 
 Before deploying it, make sure you change at least the values for:
 
@@ -130,6 +136,24 @@ You will see something like:
  ✔ Container camel_web_app-celery-dashboard-1  Started                                                             6.1s 
 ```
 ## URLs
+
+### Development URLs
+
+Development URLs, for local development.
+
+Frontend: http://localhost:5173
+
+Backend: http://localhost:8000
+
+Automatic Interactive Docs (Swagger UI): http://localhost:8000/docs
+
+Automatic Alternative Docs (ReDoc): http://localhost:8000/redoc
+
+Adminer: http://localhost:8080
+
+Traefik UI: http://localhost:8090
+
+MailCatcher: http://localhost:1080
 
 ### Development URLs with `localhost.app.camel-ai.org` Configured
 
