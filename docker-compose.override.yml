@@ -80,7 +80,7 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_URL=http://${DOMAIN?Variable not set}
+        - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
 
 networks:
