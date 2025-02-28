@@ -153,8 +153,6 @@ Adminer: http://localhost:8080
 
 Traefik UI: http://localhost:8090
 
-MailCatcher: http://localhost:1080
-
 ### Development URLs with `localhost.app.camel-ai.org` Configured
 
 Development URLs, for local development.
