@@ -1237,28 +1237,29 @@ textarea {
 
 .tab-container {
   display: flex;
-  gap: 10px; /* 增加标签之间的间距 */
-  margin-bottom: 20px; /* 增加底部间距 */
-  width: 100%; /* 固定宽度 */
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 .tab-button {
-  background-color: #4B0082; /* 按钮背景颜色 */
-  color: #ffffff; /* 按钮字体颜色 */
-  padding: 10px; /* 按钮内边距 */
+  flex: 1;
+  background-color: #4B0082;
+  color: #ffffff;
+  padding: 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s; /* 添加动效 */
-  width: 150px; /* 固定宽度 */
+  transition: background-color 0.3s;
+  text-align: center;
 }
 
 .tab-button:hover {
-  background-color: #6A5ACD; /* 悬停状态颜色 */
+  background-color: #6A5ACD;
 }
 
 .tab-button.active {
-  background-color: #6A5ACD; /* 激活状态颜色 */
+  background-color: #6A5ACD;
 }
 
 .toolkit-label {

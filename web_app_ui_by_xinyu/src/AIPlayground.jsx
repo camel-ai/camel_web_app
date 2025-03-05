@@ -26,7 +26,7 @@ const AIPlayground = () => {
   const [coordinationStrategy, setCoordinationStrategy] = useState('sequential');
   const [documentSource, setDocumentSource] = useState('');
   const [embeddingModel, setEmbeddingModel] = useState('text-embedding-3-small');
-  const [vectorStore, setVectorStore] = useState('faiss');
+  const [vectorDatabase, setVectorDatabase] = useState('qdrant');
   const [contextWindow, setContextWindow] = useState(4000);
   const [retrievalParams, setRetrievalParams] = useState({
     topK: 3,
@@ -160,6 +160,7 @@ const AIPlayground = () => {
   const [showToolkits, setShowToolkits] = useState(false); // 用于Module1中控制工具包列表的显示
   const [showAssistantToolkits, setShowAssistantToolkits] = useState(false); // 用于Module2中Assistant工具包列表的显示
   const [showUserToolkits, setShowUserToolkits] = useState(false); // 用于Module2中User工具包列表的显示
+  const [ragType, setRagType] = useState('rag'); // 新增状态变量，用于控制 RAG 类型（'rag' 或 'graph-rag'）
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -404,7 +405,7 @@ embedding_model = OpenAIEmbedding(
 )
 
 # Initialize vector store
-vector_store = ${vectorStore}.create(
+vector_store = ${vectorDatabase}.create(
     embedding_model=embedding_model,
     documents=documents
 )
@@ -1921,151 +1922,166 @@ print("Activity history:", history)
               <p>Configure your knowledge base and retrieval settings.</p>
             </div>
 
+            {/* RAG 类型选择标签页 */}
+            <div className="tab-container">
+              <button 
+                className={`tab-button ${ragType === 'rag' ? 'active' : ''}`} 
+                onClick={() => setRagType('rag')}
+              >
+                RAG
+              </button>
+              <button 
+                className={`tab-button ${ragType === 'graph-rag' ? 'active' : ''}`} 
+                onClick={() => setRagType('graph-rag')}
+              >
+                Graph RAG
+              </button>
+            </div>
+
             <div className="form">
-              {/* Document Upload Section */}
-              <div className="section-title">Document Management</div>
-              <div className="upload-section">
-                <input
-                  type="file"
-                  id="documentUpload"
-                  onChange={(e) => setDocumentSource(e.target.files[0])}
-                  multiple
-                  accept=".pdf,.txt,.doc,.docx"
-                  style={{ display: 'none' }}
-                />
-                <label htmlFor="documentUpload" className="upload-button">
-                  <i className="upload-icon">📄</i>
-                  Upload Documents
-                </label>
-                <p className="upload-hint">Supported: PDF, TXT, DOC, DOCX</p>
-                
-                <div className="file-list">
-                  {/* 这里可以添加已上传文件的列表显示 */}
-                  <div className="file-item">
-                    <span>document1.pdf</span>
-                    <button className="remove-btn">×</button>
+              {/* 基础 RAG 配置 */}
+              {ragType === 'rag' && (
+                <>
+                  {/* Document Upload Section */}
+                  <div className="section-title">Document Management</div>
+                  <div className="upload-section">
+                    <input
+                      type="file"
+                      id="documentUpload"
+                      onChange={(e) => setDocumentSource(e.target.files[0])}
+                      multiple
+                      accept=".pdf,.txt,.doc,.docx"
+                      style={{ display: 'none' }}
+                    />
+                    <label htmlFor="documentUpload" className="upload-button">
+                      <i className="upload-icon">📄</i>
+                      Upload Documents
+                    </label>
+                    <p className="upload-hint">Supported: PDF, TXT, DOC, DOCX</p>
                   </div>
-                </div>
-              </div>
 
-              {/* RAG Configuration */}
-              <div className="section-title">RAG Settings</div>
-              <div className="form-group">
-                <label>Embedding Model</label>
-                <select
-                  value={embeddingModel}
-                  onChange={(e) => setEmbeddingModel(e.target.value)}
-                >
-                  <option value="text-embedding-3-small">text-embedding-3-small</option>
-                  <option value="text-embedding-3-large">text-embedding-3-large</option>
-                  <option value="text-embedding-ada-002">text-embedding-ada-002</option>
-                </select>
-              </div>
+                  {/* RAG Configuration */}
+                  <div className="section-title">RAG Settings</div>
+                  <div className="form-group">
+                    <label>Embedding Model</label>
+                    <select
+                      value={embeddingModel}
+                      onChange={(e) => setEmbeddingModel(e.target.value)}
+                    >
+                      <option value="text-embedding-3-small">text-embedding-3-small</option>
+                      <option value="text-embedding-3-large">text-embedding-3-large</option>
+                      <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+                    </select>
+                  </div>
 
-              <div className="form-group">
-                <label>Vector Store</label>
-                <select
-                  value={vectorStore}
-                  onChange={(e) => setVectorStore(e.target.value)}
-                >
-                  <option value="QDRANT">Qdrant</option>
-                  <option value="FAISS">FAISS</option>
-                  <option value="MILVUS">Milvus</option>
-                </select>
-              </div>
+                  <div className="form-group">
+                    <label>Vector Store</label>
+                    <select
+                      value={vectorDatabase}
+                      onChange={(e) => setVectorDatabase(e.target.value)}
+                    >
+                      <option value="QDRANT">Qdrant</option>
+                      <option value="MILVUS">Milvus</option>
+                    </select>
+                  </div>
 
-              <div className="form-group">
-                <label>Top K Results</label>
-                <input
-                  type="number"
-                  value={retrievalParams.topK}
-                  onChange={(e) => setRetrievalParams(prev => ({
-                    ...prev,
-                    topK: Number(e.target.value)
-                  }))}
-                  min="1"
-                  max="20"
-                  className="short-input"
-                />
-              </div>
+                  <div className="form-group">
+                    <label>Top K Results</label>
+                    <input
+                      type="number"
+                      value={retrievalParams.topK}
+                      onChange={(e) => setRetrievalParams(prev => ({
+                        ...prev,
+                        topK: Number(e.target.value)
+                      }))}
+                      min="1"
+                      max="20"
+                      className="short-input"
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>Similarity Threshold</label>
-                <input
-                  type="range"
-                  value={retrievalParams.threshold}
-                  onChange={(e) => setRetrievalParams(prev => ({
-                    ...prev,
-                    threshold: Number(e.target.value)
-                  }))}
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  className="slider"
-                />
-                <span className="slider-value">{retrievalParams.threshold}</span>
-              </div>
+                  <div className="form-group">
+                    <label>Similarity Threshold</label>
+                    <input
+                      type="range"
+                      value={retrievalParams.threshold}
+                      onChange={(e) => setRetrievalParams(prev => ({
+                        ...prev,
+                        threshold: Number(e.target.value)
+                      }))}
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      className="slider"
+                    />
+                    <span className="slider-value">{retrievalParams.threshold}</span>
+                  </div>
+                </>
+              )}
 
-              {/* Graph RAG Configuration */}
-              <div className="section-title">Graph Database</div>
-              <div className="form-group">
-                <label>Database Type</label>
-                <select
-                  value={graphDbConfig.dbType}
-                  onChange={(e) => setGraphDbConfig(prev => ({
-                    ...prev,
-                    dbType: e.target.value
-                  }))}
-                >
-                  <option value="neo4j">Neo4j</option>
-                  <option value="tigergraph">TigerGraph</option>
-                  <option value="neptune">Amazon Neptune</option>
-                </select>
-              </div>
+              {/* Graph RAG 配置 */}
+              {ragType === 'graph-rag' && (
+                <>
+                  <div className="section-title">Graph Database</div>
+                  <div className="form-group">
+                    <label>Database Type</label>
+                    <select
+                      value={graphDbConfig.dbType}
+                      onChange={(e) => setGraphDbConfig(prev => ({
+                        ...prev,
+                        dbType: e.target.value
+                      }))}
+                    >
+                      <option value="neo4j">Neo4j</option>
+                      <option value="Nebula">Nebula</option>
+                    </select>
+                  </div>
 
-              <div className="form-group">
-                <label>Database URI</label>
-                <input
-                  type="text"
-                  value={graphDbConfig.uri}
-                  onChange={(e) => setGraphDbConfig(prev => ({
-                    ...prev,
-                    uri: e.target.value
-                  }))}
-                  placeholder="neo4j://localhost:7687"
-                  className="short-input"
-                />
-              </div>
+                  <div className="form-group">
+                    <label>Database URI</label>
+                    <input
+                      type="text"
+                      value={graphDbConfig.uri}
+                      onChange={(e) => setGraphDbConfig(prev => ({
+                        ...prev,
+                        uri: e.target.value
+                      }))}
+                      placeholder="neo4j://localhost:7687"
+                      className="short-input"
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  value={graphDbConfig.username}
-                  onChange={(e) => setGraphDbConfig(prev => ({
-                    ...prev,
-                    username: e.target.value
-                  }))}
-                  placeholder="neo4j"
-                  className="short-input"
-                />
-              </div>
+                  <div className="form-group">
+                    <label>Username</label>
+                    <input
+                      type="text"
+                      value={graphDbConfig.username}
+                      onChange={(e) => setGraphDbConfig(prev => ({
+                        ...prev,
+                        username: e.target.value
+                      }))}
+                      placeholder="neo4j"
+                      className="short-input"
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  value={graphDbConfig.password}
-                  onChange={(e) => setGraphDbConfig(prev => ({
-                    ...prev,
-                    password: e.target.value
-                  }))}
-                  placeholder="Enter password"
-                  className="short-input"
-                />
-              </div>
+                  <div className="form-group">
+                    <label>Password</label>
+                    <input
+                      type="password"
+                      value={graphDbConfig.password}
+                      onChange={(e) => setGraphDbConfig(prev => ({
+                        ...prev,
+                        password: e.target.value
+                      }))}
+                      placeholder="Enter password"
+                      className="short-input"
+                    />
+                  </div>
+                </>
+              )}
 
-              {/* 添加开始 RAG 按钮 */}
+              {/* 添加开始按钮 */}
               <div className="rag-action">
                 <button 
                   className="start-rag-btn"
@@ -2080,17 +2096,10 @@ print("Activity history:", history)
                   ) : (
                     <>
                       <span className="icon">🚀</span>
-                      <span>Start RAG Process</span>
+                      <span>Start {ragType.toUpperCase()} Process</span>
                     </>
                   )}
                 </button>
-                {documentSource && (
-                  <p className="status-message">
-                    Ready to process: {typeof documentSource === 'string' ? 
-                      documentSource : 
-                      documentSource.name}
-                  </p>
-                )}
               </div>
             </div>
           </div>
