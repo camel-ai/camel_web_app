@@ -1,14 +1,16 @@
 from fastapi import APIRouter
 from app.models.human import Human
+
 router = APIRouter()
+
 @router.post(
     "/human/process",
     response_model=Human,
-    summary="处理Human请求",
-    description="根据前端提供的参数处理Human流程。"
+    summary="Process Human request",
+    description="Process the Human workflow based on the parameters provided by the frontend."
 )
 async def process_human(request: Human):
-    """处理human请求"""
-    # 模拟human处理逻辑
+    """Process Human request"""
+    # Simulate Human processing logic
     print("Processing human:", request)
-    return {"message": "human process completed successfully!"}
+    return {"message": "Human process completed successfully!"}

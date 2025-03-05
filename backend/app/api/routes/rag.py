@@ -2,32 +2,34 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.models.rag import RAGRequest, RAGResponse
 from app.models.chat import ChatRequest
 from typing import List, Dict, Any
+
 router = APIRouter()
 
 @router.post(
     "/rag/process",
     response_model=RAGResponse,
-    summary="处理RAG请求",
-    description="根据前端提供的参数（如文档来源、嵌入模型、向量存储等）处理RAG流程。"
+    summary="Process RAG request",
+    description="Process the RAG workflow based on parameters provided by the frontend (such as document sources, embedding models, vector storage, etc.)."
 )
 async def process_rag(request: RAGRequest):
-    """处理RAG请求"""
-    # 模拟RAG处理逻辑
+    """Process RAG request"""
+    # Simulate RAG processing logic
     print("Processing RAG:", request)
     return {"message": "RAG process completed successfully!"}
 
 @router.post(
     "/rag/upload",
     response_model=RAGResponse,
-    summary="上传文档",
-    description="上传文档以支持RAG流程。支持的文件格式包括PDF、TXT、DOC、DOCX。"
+    summary="Upload document",
+    description="Upload documents to support the RAG workflow. Supported file formats include PDF, TXT, DOC, DOCX."
 )
 async def upload_documents(file: UploadFile = File(...)):
-    """上传文档"""
-    # 模拟文档上传逻辑
+    """Upload document"""
+    # Simulate document upload logic
     print("File uploaded:", file.filename)
     return {"message": "Document uploaded successfully!"}
+
 @router.post("/rag/chat", response_model=Dict[str, Any])
-async def chat(request:ChatRequest,settings: RAGRequest):
+async def chat(request: ChatRequest, settings: RAGRequest):
     print(request)
     return {"message": "Hello, this is a mock response."}

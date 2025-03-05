@@ -6,11 +6,11 @@ router = APIRouter()
 @router.post(
     "/approval/approve",
     response_model=ApprovalResponse,
-    summary="处理审批请求",
-    description="根据请求ID和操作类型（批准或拒绝）处理审批请求。"
+    summary="Process approval request",
+    description="Process the approval request based on the request ID and action type (approve or reject)."
 )
 async def approve_request(request: ApprovalRequest):
-    """处理审批请求"""
-    # 模拟审批逻辑
+    """Process approval request"""
+    # Simulate approval logic
     print("Approval request received:", request)
     return {"message": "Request approved successfully!"}
