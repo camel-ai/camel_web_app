@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.models.rag import RAGRequest, RAGResponse
-
+from app.models.chat import ChatRequest
+from typing import List, Dict, Any
 router = APIRouter()
 
 @router.post(
@@ -27,6 +28,6 @@ async def upload_documents(file: UploadFile = File(...)):
     print("File uploaded:", file.filename)
     return {"message": "Document uploaded successfully!"}
 @router.post("/rag/chat", response_model=Dict[str, Any])
-async def chat(request:ChatRequest,settings: Settings):
+async def chat(request:ChatRequest,settings: RAGRequest):
     print(request)
     return {"message": "Hello, this is a mock response."}
