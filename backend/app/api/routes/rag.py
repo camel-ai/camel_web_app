@@ -26,3 +26,7 @@ async def upload_documents(file: UploadFile = File(...)):
     # 模拟文档上传逻辑
     print("File uploaded:", file.filename)
     return {"message": "Document uploaded successfully!"}
+@router.post("/rag/chat", response_model=Dict[str, Any])
+async def chat(request:ChatRequest,settings: Settings):
+    print(request)
+    return {"message": "Hello, this is a mock response."}

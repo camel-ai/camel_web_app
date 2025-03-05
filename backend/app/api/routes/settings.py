@@ -7,30 +7,6 @@ import re
 
 router = APIRouter()
 
-
-@router.get("/settings/", response_model=SettingsResponse)
-async def get_settings():
-    """获取初始设置数据"""
-    initial_settings = {
-        "platformType": "OPENAI",
-        "modelType": "GPT_4",
-        "apiKey": "",
-        "systemMessage": "You are a helpful assistant.",
-        "outputLanguage": "English",
-        "agents": [],
-        "pendingApprovals": [],
-        "recentActivity": [],
-        "retrievalParams": {"topK": 3, "threshold": 0.7}
-    }
-    return {"data": initial_settings}
-
-@router.post("/settings/", response_model=SettingsResponse)
-async def save_settings(settings: Settings):
-    """保存用户设置"""
-    print("Settings saved:", settings)
-    return {"data": settings}
-
-
 @router.post("/settings/generate_code")
 async def generate_code(request_data: CodeGenerateRequest):
     module_type = request_data.moduleType

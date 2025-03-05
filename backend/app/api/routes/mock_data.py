@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.settings import Settings
+from app.models.chat import ChatRequest
 
 router = APIRouter()
 
@@ -131,10 +132,6 @@ MOCK_DATA = {
         },
     ],
 }
-
-# Pydantic 模型
-class ChatRequest(BaseModel):
-    userMessage: str
 
 
 # 获取所有选项和数据

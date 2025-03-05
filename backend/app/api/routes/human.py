@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.models.settings import Human
+from app.models.human import Human
 router = APIRouter()
 @router.post(
     "/human/process",
