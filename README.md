@@ -7,10 +7,10 @@ CAMEL Web App is a React-based web interface designed to demonstrate CAMEL's var
 We welcome contributions! Please feel free to submit a Pull Request.
 
 ## Contributors
-- Front-end Lead: [xinyuguan3](https://github.com/xinyuguan3) - Create Your First Agent
+- Front-end Lead: [xinyuguan3](https://github.com/xinyuguan3) 
 - Back-end Lead: [koch3092](https://github.com/koch3092)
-- Back-end: [xzjjj](https://github.com/xzjjj) - Create Your Role Playing Session
-- Full Stack: [User235514](https://github.com/User235514) - Create Your First Agent (Toolkits)
+- Back-end: [xzjjj](https://github.com/xzjjj)
+- Full Stack: [User235514](https://github.com/User235514)
 
 ## Features
 - **Multi-Model Support**
