@@ -1,6 +1,62 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AIPlayground.css';
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AppSidebar } from "@/components/app-sidebar"
+import { cn } from "@/lib/utils"
+import { Slider } from "@/components/ui/slider"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
@@ -604,7 +660,7 @@ print("Activity history:", history)
     setIsLoading(true);
 
     try {
-      // 这里添加与后端的通信逻辑
+      // TODO:这里添加与后端的通信逻辑
       // const response = await sendToBackend(userMessage);
       
       // 模拟 AI 响应
@@ -765,47 +821,60 @@ print("Activity history:", history)
             <div className="form">
               {/* API 类型选择标签页 */}
               <div className="tab-container">
-                <button 
+              <Tabs defaultValue="camel" className="w-[600px]">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger 
+                  onClick={() => setApiType('camel')}
+                  value="camel">CAMEL-supported model</TabsTrigger>
+                  <TabsTrigger  
+                  onClick={() => setApiType('custom')}
+                  value="custom">Custom model</TabsTrigger>
+                  <TabsTrigger
+                  onClick={() => setApiType('openai')}
+                  value="openai">OpenAI compatible API</TabsTrigger>
+                </TabsList>
+              </Tabs>
+                {/* <Button 
                   className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
                   onClick={() => setApiType('camel')}
                 >
                   CAMEL-supported model
-                </button>
-                <button 
+                </Button> */}
+                {/* <Button 
                   className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
                   onClick={() => setApiType('custom')}
                 >
                   Custom model
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
                   onClick={() => setApiType('openai')}
                 >
                   OpenAI compatible API
-                </button>
-                <button 
+                </Button> */}
+                {/* <Button 
                   className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
                   onClick={() => setApiType('on-device')}
                 >
                   On-Device Opensource Model
-                </button>
+                </Button> */}
               </div>
 
               {/* Available Toolkits */}
               <div className="form-group">
-                <label className="toolkit-label" onClick={() => setShowToolkits(prev => !prev)}>
+                <Label className="toolkit-label" onClick={() => setShowToolkits(prev => !prev)}>
                   Available Toolkits
                   <span 
                     className={`arrow ${showToolkits ? 'open' : 'closed'}`} 
                   >
                     {showToolkits ? '▲' : '▼'}
                   </span>
-                </label>
+                </Label>
                 {showToolkits && (
                   <div className="toolkit-options">
                     {Object.keys(selectedTools).map(tool => (
-                      <label key={tool} className="checkbox-label">
-                        <input
+                      <Label key={tool} className="checkbox-label">
+                        <Input
                           type="checkbox"
                           checked={selectedTools[tool]}
                           onChange={(e) => setSelectedTools(prev => ({
@@ -814,7 +883,7 @@ print("Activity history:", history)
                           }))}
                         />
                         {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
-                      </label>
+                      </Label>
                     ))}
                   </div>
                 )}
@@ -825,35 +894,44 @@ print("Activity history:", history)
                 <>
                   {/* CAMEL supported model */}
                   <div className="form-group">
-                    <label htmlFor="platform">model_platform</label>
-                    <select
-                      id="platform"
-                      value={platformType}
-                      onChange={(e) => setPlatformType(e.target.value)}
-                      className="short-select"
-                    >
-                      {platformOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    
+                    <Label htmlFor="platform">model_platform</Label>
+                    
+                
+                    <Select value={platformType} onValueChange={setPlatformType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {platformOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    
                   </div>
+                
 
                   <div className="form-group">
-                    <label htmlFor="model">model_type</label>
-                    <select
-                      id="model"
-                      value={modelType}
-                      onChange={(e) => setModelType(e.target.value)}
-                      className="short-select"
-                    >
-                      {modelOptions[platformType]?.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Label htmlFor="model">model_type</Label>
+                    <Select value={modelType} onValueChange={setModelType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {modelOptions[platformType]?.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
@@ -861,8 +939,8 @@ print("Activity history:", history)
               {apiType === 'custom' && (
                 <>
                   <div className="form-group">
-                    <label>model_platform</label>
-                    <input
+                    <Label>model_platform</Label>
+                    <Input
                       type="text"
                       id="platform"
                       value={platformType}
@@ -872,8 +950,8 @@ print("Activity history:", history)
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="customModel">model_name</label>
-                    <input
+                    <Label htmlFor="customModel">model_name</Label>
+                    <Input
                       type="text"
                       id="customModel"
                       value={modelType}
@@ -888,8 +966,8 @@ print("Activity history:", history)
               {apiType === 'openai' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleApiKey">api_key</label>
-                    <input
+                    <Label htmlFor="openaicompatibleApiKey">api_key</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleApiKey"
                       value={apiKey}
@@ -900,8 +978,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
-                    <input
+                    <Label htmlFor="openaicompatibleBaseUrl">base_url</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleBaseUrl"
                       value={baseUrl}
@@ -912,8 +990,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleModelType">model_type</label>
-                    <input
+                    <Label htmlFor="openaicompatibleModelType">model_type</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleModelType"
                       value={modelType}
@@ -924,8 +1002,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="temperature">temperature</label>
-                    <input
+                    <Label htmlFor="temperature">temperature</Label>
+                    <Input
                       type="text"
                       id="temperature"
                       value={temperature}
@@ -936,8 +1014,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="maxTokens">max_tokens</label>
-                    <input
+                    <Label htmlFor="maxTokens">max_tokens</Label>
+                    <Input
                       type="text"
                       id="maxTokens"
                       value={maxTokens}
@@ -949,12 +1027,12 @@ print("Activity history:", history)
                 </>
               )}
 
-              {apiType === 'on-device' && (
+              {/* {apiType === 'on-device' && (
                 <>
-                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
+
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_platform</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_platform</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value="ollama"
@@ -964,8 +1042,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_name</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_name</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value={modelType}
@@ -976,8 +1054,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">base_url</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">base_url</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={baseUrl}
@@ -988,8 +1066,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">temperature</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">temperature</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={temperature}
@@ -1000,8 +1078,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">max_tokens</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">max_tokens</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={maxTokens}
@@ -1011,12 +1089,12 @@ print("Activity history:", history)
                     />
                   </div>
                 </>
-              )}
+              )} */}
 
               {/* API Key 输入 */}
               <div className="form-group">
-                <label htmlFor="apiKey">api_key</label>
-                <input
+                <Label htmlFor="apiKey">api_key</Label>
+                <Input
                   type="text"
                   id="apiKey"
                   value={apiKey}
@@ -1028,8 +1106,8 @@ print("Activity history:", history)
 
               {/* Base URL 输入 */}
               <div className="form-group">
-                <label htmlFor="baseUrl">Base URL</label>
-                <input
+                <Label htmlFor="baseUrl">Base URL</Label>
+                <Input
                   type="text"
                   id="baseUrl"
                   value={baseUrl}
@@ -1041,7 +1119,7 @@ print("Activity history:", history)
 
               {/* Agent Prompt 输入（重命名为系统消息） */}
               <div className="form-group">
-                <label htmlFor="agentPrompt">System Message</label>
+                <Label htmlFor="agentPrompt">System Message</Label>
                 <textarea
                   id="agentPrompt"
                   value={systemMessage}
@@ -1067,7 +1145,7 @@ print("Activity history:", history)
               <div className="section-title">Task Configuration</div>
               
               <div className="form-group">
-                <label htmlFor="taskPrompt">Task Prompt</label>
+                <Label htmlFor="taskPrompt">Task Prompt</Label>
                 <textarea
                   id="taskPrompt"
                   value={taskPrompt}
@@ -1082,35 +1160,35 @@ print("Activity history:", history)
               <div className="form">
               {/* API 类型选择标签页 */}
               <div className="tab-container">
-                <button 
+                <Button 
                   className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
                   onClick={() => setApiType('camel')}
                 >
                   CAMEL-supported model
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
                   onClick={() => setApiType('custom')}
                 >
                   Custom model
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
                   onClick={() => setApiType('openai')}
                 >
                   OpenAI compatible API
-                </button>
-                <button 
+                </Button>
+                {/* <Button 
                   className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
                   onClick={() => setApiType('on-device')}
                 >
                   On-Device Opensource Model
-                </button>
+                </Button> */}
               </div>
 
               {/* Available Toolkits */}
               <div className="form-group">
-                <label className="toolkit-label" onClick={() => setShowAssistantToolkits(prev => !prev)}>
+                <Label className="toolkit-label" onClick={() => setShowAssistantToolkits(prev => !prev)}>
                   Available Toolkits
                   <span 
                     className={`arrow ${showAssistantToolkits ? 'open' : 'closed'}`} 
@@ -1118,12 +1196,12 @@ print("Activity history:", history)
                   >
                     {showAssistantToolkits ? '▲' : '▼'}
                   </span>
-                </label>
+                </Label>
                 {showAssistantToolkits && (
                   <div className="toolkit-options">
                     {Object.keys(assistantSelectedToolkits).map(tool => (
-                      <label key={tool} className="checkbox-label">
-                        <input
+                      <Label key={tool} className="checkbox-label">
+                        <Input
                           type="checkbox"
                           checked={assistantSelectedToolkits[tool]}
                           onChange={(e) => setAssistantSelectedToolkits(prev => ({
@@ -1132,7 +1210,7 @@ print("Activity history:", history)
                           }))}
                         />
                         {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
-                      </label>
+                      </Label>
                     ))}
                   </div>
                 )}
@@ -1143,35 +1221,39 @@ print("Activity history:", history)
                 <>
                   {/* CAMEL supported model */}
                   <div className="form-group">
-                    <label htmlFor="platform">model_platform</label>
-                    <select
-                      id="platform"
-                      value={platformType}
-                      onChange={(e) => setPlatformType(e.target.value)}
-                      className="short-select"
-                    >
-                      {platformOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Label htmlFor="platform">model_platform</Label>
+                    <Select value={platformType} onValueChange={setPlatformType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {platformOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="model">model_type</label>
-                    <select
-                      id="model"
-                      value={modelType}
-                      onChange={(e) => setModelType(e.target.value)}
-                      className="short-select"
-                    >
-                      {modelOptions[platformType]?.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Label htmlFor="model">model_type</Label>
+                    <Select value={modelType} onValueChange={setModelType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {modelOptions[platformType]?.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
@@ -1179,8 +1261,8 @@ print("Activity history:", history)
               {apiType === 'custom' && (
                 <>
                   <div className="form-group">
-                    <label>model_platform</label>
-                    <input
+                    <Label>model_platform</Label>
+                    <Input
                       type="text"
                       id="platform"
                       value={platformType}
@@ -1190,8 +1272,8 @@ print("Activity history:", history)
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="customModel">model_name</label>
-                    <input
+                    <Label htmlFor="customModel">model_name</Label>
+                    <Input
                       type="text"
                       id="customModel"
                       value={modelType}
@@ -1206,8 +1288,8 @@ print("Activity history:", history)
               {apiType === 'openai' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleApiKey">api_key</label>
-                    <input
+                    <Label htmlFor="openaicompatibleApiKey">api_key</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleApiKey"
                       value={apiKey}
@@ -1218,8 +1300,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
-                    <input
+                    <Label htmlFor="openaicompatibleBaseUrl">base_url</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleBaseUrl"
                       value={baseUrl}
@@ -1230,8 +1312,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleModelType">model_type</label>
-                    <input
+                    <Label htmlFor="openaicompatibleModelType">model_type</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleModelType"
                       value={modelType}
@@ -1242,8 +1324,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="temperature">temperature</label>
-                    <input
+                    <Label htmlFor="temperature">temperature</Label>
+                    <Input
                       type="text"
                       id="temperature"
                       value={temperature}
@@ -1254,8 +1336,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="maxTokens">max_tokens</label>
-                    <input
+                    <Label htmlFor="maxTokens">max_tokens</Label>
+                    <Input
                       type="text"
                       id="maxTokens"
                       value={maxTokens}
@@ -1267,12 +1349,11 @@ print("Activity history:", history)
                 </>
               )}
 
-              {apiType === 'on-device' && (
+              {/* {apiType === 'on-device' && (
                 <>
-                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_platform</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_platform</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value="ollama"
@@ -1282,8 +1363,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_name</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_name</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value={modelType}
@@ -1294,8 +1375,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">base_url</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">base_url</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={baseUrl}
@@ -1306,8 +1387,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">temperature</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">temperature</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={temperature}
@@ -1318,8 +1399,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">max_tokens</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">max_tokens</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={maxTokens}
@@ -1329,12 +1410,12 @@ print("Activity history:", history)
                     />
                   </div>
                 </>
-              )}
+              )} */}
 
               {/* API Key 输入 */}
               <div className="form-group">
-                <label htmlFor="apiKey">api_key</label>
-                <input
+                <Label htmlFor="apiKey">api_key</Label>
+                <Input
                   type="text"
                   id="apiKey"
                   value={apiKey}
@@ -1346,8 +1427,8 @@ print("Activity history:", history)
 
               {/* Base URL 输入 */}
               <div className="form-group">
-                <label htmlFor="baseUrl">Base URL</label>
-                <input
+                <Label htmlFor="baseUrl">Base URL</Label>
+                <Input
                   type="text"
                   id="baseUrl"
                   value={baseUrl}
@@ -1359,7 +1440,7 @@ print("Activity history:", history)
 
               {/* Agent Prompt 输入（重命名为系统消息） */}
               <div className="form-group">
-                <label htmlFor="agentPrompt">System Message</label>
+                <Label htmlFor="agentPrompt">System Message</Label>
                 <textarea
                   id="agentPrompt"
                   value={systemMessage}
@@ -1376,47 +1457,47 @@ print("Activity history:", history)
               <div className="form">
               {/* API 类型选择标签页 */}
               <div className="tab-container">
-                <button 
+                <Button 
                   className={`tab-button ${apiType === 'camel' ? 'active' : ''}`} 
                   onClick={() => setApiType('camel')}
                 >
                   CAMEL-supported model
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className={`tab-button ${apiType === 'custom' ? 'active' : ''}`} 
                   onClick={() => setApiType('custom')}
                 >
                   Custom model
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className={`tab-button ${apiType === 'openai' ? 'active' : ''}`} 
                   onClick={() => setApiType('openai')}
                 >
                   OpenAI compatible API
-                </button>
-                <button 
+                </Button>
+                {/* <Button 
                   className={`tab-button ${apiType === 'on-device' ? 'active' : ''}`} 
                   onClick={() => setApiType('on-device')}
                 >
                   On-Device Opensource Model
-                </button>
+                </Button> */}
               </div>
 
               {/* Available Toolkits */}
               <div className="form-group">
-                <label className="toolkit-label" onClick={() => setShowUserToolkits(prev => !prev)}>
+                <Label className="toolkit-label" onClick={() => setShowUserToolkits(prev => !prev)}>
                   Available Toolkits
                   <span 
                     className={`arrow ${showUserToolkits ? 'open' : 'closed'}`} 
                   >
                     {showUserToolkits ? '▲' : '▼'}
                   </span>
-                </label>
+                </Label>
                 {showUserToolkits && (
                   <div className="toolkit-options">
                     {Object.keys(userSelectedToolkits).map(tool => (
-                      <label key={tool} className="checkbox-label">
-                        <input
+                      <Label key={tool} className="checkbox-label">
+                        <Input
                           type="checkbox"
                           checked={userSelectedToolkits[tool]}
                           onChange={(e) => setUserSelectedToolkits(prev => ({
@@ -1425,7 +1506,7 @@ print("Activity history:", history)
                           }))}
                         />
                         {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
-                      </label>
+                      </Label>
                     ))}
                   </div>
                 )}
@@ -1436,35 +1517,39 @@ print("Activity history:", history)
                 <>
                   {/* CAMEL supported model */}
                   <div className="form-group">
-                    <label htmlFor="platform">model_platform</label>
-                    <select
-                      id="platform"
-                      value={platformType}
-                      onChange={(e) => setPlatformType(e.target.value)}
-                      className="short-select"
-                    >
-                      {platformOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Label htmlFor="platform">model_platform</Label>
+                    <Select value={platformType} onValueChange={setPlatformType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {platformOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="model">model_type</label>
-                    <select
-                      id="model"
-                      value={modelType}
-                      onChange={(e) => setModelType(e.target.value)}
-                      className="short-select"
-                    >
-                      {modelOptions[platformType]?.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <Label htmlFor="model">model_type</Label>
+                    <Select value={modelType} onValueChange={setModelType}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {modelOptions[platformType]?.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
@@ -1472,8 +1557,8 @@ print("Activity history:", history)
               {apiType === 'custom' && (
                 <>
                   <div className="form-group">
-                    <label>model_platform</label>
-                    <input
+                    <Label>model_platform</Label>
+                    <Input
                       type="text"
                       id="platform"
                       value={platformType}
@@ -1483,8 +1568,8 @@ print("Activity history:", history)
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="customModel">model_name</label>
-                    <input
+                    <Label htmlFor="customModel">model_name</Label>
+                    <Input
                       type="text"
                       id="customModel"
                       value={modelType}
@@ -1499,8 +1584,8 @@ print("Activity history:", history)
               {apiType === 'openai' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleApiKey">api_key</label>
-                    <input
+                    <Label htmlFor="openaicompatibleApiKey">api_key</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleApiKey"
                       value={apiKey}
@@ -1511,8 +1596,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleBaseUrl">base_url</label>
-                    <input
+                    <Label htmlFor="openaicompatibleBaseUrl">base_url</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleBaseUrl"
                       value={baseUrl}
@@ -1523,8 +1608,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="openaicompatibleModelType">model_type</label>
-                    <input
+                    <Label htmlFor="openaicompatibleModelType">model_type</Label>
+                    <Input
                       type="text"
                       id="openaicompatibleModelType"
                       value={modelType}
@@ -1535,8 +1620,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="temperature">temperature</label>
-                    <input
+                    <Label htmlFor="temperature">temperature</Label>
+                    <Input
                       type="text"
                       id="temperature"
                       value={temperature}
@@ -1547,8 +1632,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="maxTokens">max_tokens</label>
-                    <input
+                    <Label htmlFor="maxTokens">max_tokens</Label>
+                    <Input
                       type="text"
                       id="maxTokens"
                       value={maxTokens}
@@ -1560,12 +1645,11 @@ print("Activity history:", history)
                 </>
               )}
 
-              {apiType === 'on-device' && (
+              {/* {apiType === 'on-device' && (
                 <>
-                {/* model platform is fixed to ollama, user cannot change it, and it's grayed out*/}
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_platform</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_platform</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value="ollama"
@@ -1575,8 +1659,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceModel">model_name</label>
-                    <input
+                    <Label htmlFor="onDeviceModel">model_name</Label>
+                    <Input
                       type="text"
                       id="onDeviceModel"
                       value={modelType}
@@ -1587,8 +1671,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">base_url</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">base_url</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={baseUrl}
@@ -1599,8 +1683,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">temperature</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">temperature</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={temperature}
@@ -1611,8 +1695,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="onDeviceConfig">max_tokens</label>
-                    <input
+                    <Label htmlFor="onDeviceConfig">max_tokens</Label>
+                    <Input
                       type="text"
                       id="onDeviceConfig"
                       value={maxTokens}
@@ -1622,12 +1706,12 @@ print("Activity history:", history)
                     />
                   </div>
                 </>
-              )}
+              )} */}
 
               {/* API Key 输入 */}
               <div className="form-group">
-                <label htmlFor="apiKey">api_key</label>
-                <input
+                <Label htmlFor="apiKey">api_key</Label>
+                <Input
                   type="text"
                   id="apiKey"
                   value={apiKey}
@@ -1639,8 +1723,8 @@ print("Activity history:", history)
 
               {/* Base URL 输入 */}
               <div className="form-group">
-                <label htmlFor="baseUrl">Base URL</label>
-                <input
+                <Label htmlFor="baseUrl">Base URL</Label>
+                <Input
                   type="text"
                   id="baseUrl"
                   value={baseUrl}
@@ -1652,7 +1736,7 @@ print("Activity history:", history)
 
               {/* Agent Prompt 输入（重命名为系统消息） */}
               <div className="form-group">
-                <label htmlFor="agentPrompt">System Message</label>
+                <Label htmlFor="agentPrompt">System Message</Label>
                 <textarea
                   id="agentPrompt"
                   value={systemMessage}
@@ -1678,8 +1762,8 @@ print("Activity history:", history)
               {/* Workforce Basic Settings */}
               <div className="section-title">Workforce Settings</div>
               <div className="form-group">
-                <label>Workforce Description</label>
-                <input
+                <Label>Workforce Description</Label>
+                <Input
                   type="text"
                   value={workforceName}
                   onChange={(e) => setWorkforceName(e.target.value)}
@@ -1690,20 +1774,20 @@ print("Activity history:", history)
 
               {/* Agent Management Buttons */}
               <div className="agent-management">
-                <button 
+                <Button 
                   className="add-agent-btn"
                   onClick={() => handleAddAgent('single')}
                 >
                   <span className="icon">➕</span>
                   Add Single Agent
-                </button>
-                <button 
+                </Button>
+                <Button 
                   className="add-agent-btn"
                   onClick={() => handleAddAgent('pair')}
                 >
                   <span className="icon">➕</span>
                   Add Role-Playing Pair
-                </button>
+                </Button>
               </div>
 
               {/* Agent List */}
@@ -1712,20 +1796,20 @@ print("Activity history:", history)
                   <div key={agent.id} className="agent-config">
                     <div className="agent-header">
                       <h4>{agent.type === 'single' ? 'Single Agent' : 'Role-Playing Pair'}</h4>
-                      <button 
+                      <Button 
                         className="remove-agent-btn"
                         onClick={() => handleRemoveAgent(index)}
                       >
                         ✕
-                      </button>
+                      </Button>
                     </div>
 
                     {agent.type === 'single' ? (
                       // Single Agent Configuration
                       <>
                         <div className="form-group">
-                          <label>Agent Name</label>
-                          <input
+                          <Label>Agent Name</Label>
+                          <Input
                             type="text"
                             value={agent.name}
                             onChange={(e) => handleUpdateAgent(index, 'name', e.target.value)}
@@ -1734,7 +1818,7 @@ print("Activity history:", history)
                           />
                         </div>
                         <div className="form-group">
-                          <label>System Message</label>
+                          <Label>System Message</Label>
                           <textarea
                             value={agent.systemMessage}
                             onChange={(e) => handleUpdateAgent(index, 'systemMessage', e.target.value)}
@@ -1746,8 +1830,8 @@ print("Activity history:", history)
                       // Role-Playing Pair Configuration
                       <>
                         <div className="form-group">
-                          <label>Assistant Role</label>
-                          <input
+                          <Label>Assistant Role</Label>
+                          <Input
                             type="text"
                             value={agent.assistantRole}
                             onChange={(e) => handleUpdateAgent(index, 'assistantRole', e.target.value)}
@@ -1756,8 +1840,8 @@ print("Activity history:", history)
                           />
                         </div>
                         <div className="form-group">
-                          <label>User Role</label>
-                          <input
+                          <Label>User Role</Label>
+                          <Input
                             type="text"
                             value={agent.userRole}
                             onChange={(e) => handleUpdateAgent(index, 'userRole', e.target.value)}
@@ -1770,80 +1854,80 @@ print("Activity history:", history)
 
                     {/* Tools Selection */}
                     <div className="tools-section">
-                      <label className="section-label">Available Tools</label>
+                      <Label className="section-label">Available Tools</Label>
                       <div className="tools-selection">
-                        <label className="checkbox-label">
-                          <input
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('search')}
                             onChange={(e) => handleToolToggle(index, 'search', e.target.checked)}
                           />
                           Search Tools
-                        </label>
-                        <label className="checkbox-label">
-                          <input
+                        </Label>
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('weather')}
                             onChange={(e) => handleToolToggle(index, 'weather', e.target.checked)}
                           />
                           Weather Tools
-                        </label>
-                        <label className="checkbox-label">
-                          <input
+                        </Label>
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('maps')}
                             onChange={(e) => handleToolToggle(index, 'maps', e.target.checked)}
                           />
                           Google Maps Tools
-                        </label>
-                        <label className="checkbox-label">
-                          <input
+                        </Label>
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('math')}
                             onChange={(e) => handleToolToggle(index, 'math', e.target.checked)}
                           />
                           MathToolkit
-                        </label>
-                        <label className="checkbox-label">
-                          <input
+                        </Label>
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('twitter')}
                             onChange={(e) => handleToolToggle(index, 'twitter', e.target.checked)}
                           />
                           TwitterToolkit
-                        </label>
-                        <label className="checkbox-label">
-                          <input
+                        </Label>
+                        <Label className="checkbox-label">
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('retrieval')}
                             onChange={(e) => handleToolToggle(index, 'retrieval', e.target.checked)}
                           />
                           RetrievalToolkit
-                        </label>
-                        <label className="checkbox-label"> 
-                          <input
+                        </Label>
+                        <Label className="checkbox-label"> 
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('slack')}
                             onChange={(e) => handleToolToggle(index, 'slack', e.target.checked)}
                           />
                           SlackToolkit
-                        </label>
-                        <label className="checkbox-label"> 
-                          <input
+                        </Label>
+                        <Label className="checkbox-label"> 
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('linkedin')}
                             onChange={(e) => handleToolToggle(index, 'linkedin', e.target.checked)}
                           />
                           LinkedInToolkit
-                        </label>
-                        <label className="checkbox-label"> 
-                          <input
+                        </Label>
+                        <Label className="checkbox-label"> 
+                          <Input
                             type="checkbox"
                             checked={agent.tools.includes('reddit')}
                             onChange={(e) => handleToolToggle(index, 'reddit', e.target.checked)}
                           />
                           RedditToolkit
-                        </label>
+                        </Label>
                       
                       </div>
                     </div>
@@ -1854,7 +1938,7 @@ print("Activity history:", history)
               {/* Task Configuration */}
               <div className="section-title">Task Definition</div>
               <div className="form-group">
-                <label>Task Content</label>
+                <Label>Task Content</Label>
                 <textarea
                   value={taskDefinition}
                   onChange={(e) => setTaskDefinition(e.target.value)}
@@ -1880,7 +1964,7 @@ print("Activity history:", history)
                   </div>
                 </div>
 
-                <button 
+                <Button 
                   className="start-workflow-btn"
                   disabled={isLoading || agents.length === 0}
                   onClick={handleStartWorkflow}
@@ -1896,7 +1980,7 @@ print("Activity history:", history)
                       <span>Start Workforce</span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1925,18 +2009,18 @@ print("Activity history:", history)
 
             {/* RAG 类型选择标签页 */}
             <div className="tab-container">
-              <button 
+              <Button 
                 className={`tab-button ${ragType === 'rag' ? 'active' : ''}`} 
                 onClick={() => setRagType('rag')}
               >
                 RAG
-              </button>
-              <button 
+              </Button>
+              <Button 
                 className={`tab-button ${ragType === 'graph-rag' ? 'active' : ''}`} 
                 onClick={() => setRagType('graph-rag')}
               >
                 Graph RAG
-              </button>
+              </Button>
             </div>
 
             <div className="form">
@@ -1946,7 +2030,7 @@ print("Activity history:", history)
                   {/* Document Upload Section */}
                   <div className="section-title">Document Management</div>
                   <div className="upload-section">
-                    <input
+                    <Input
                       type="file"
                       id="documentUpload"
                       onChange={(e) => setDocumentSource(e.target.files[0])}
@@ -1954,41 +2038,49 @@ print("Activity history:", history)
                       accept=".pdf,.txt,.doc,.docx"
                       style={{ display: 'none' }}
                     />
-                    <label htmlFor="documentUpload" className="upload-button">
+                    <Label htmlFor="documentUpload" className="upload-button">
                       <i className="upload-icon">📄</i>
                       Upload Documents
-                    </label>
+                    </Label>
                     <p className="upload-hint">Supported: PDF, TXT, DOC, DOCX</p>
                   </div>
 
                   {/* RAG Configuration */}
                   <div className="section-title">RAG Settings</div>
                   <div className="form-group">
-                    <label>Embedding Model</label>
-                    <select
-                      value={embeddingModel}
-                      onChange={(e) => setEmbeddingModel(e.target.value)}
-                    >
-                      <option value="text-embedding-3-small">text-embedding-3-small</option>
-                      <option value="text-embedding-3-large">text-embedding-3-large</option>
-                      <option value="text-embedding-ada-002">text-embedding-ada-002</option>
-                    </select>
+                    <Label>Embedding Model</Label>
+                    <Select value={embeddingModel} onValueChange={setEmbeddingModel}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select embedding model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="text-embedding-3-small">text-embedding-3-small</SelectItem>
+                          <SelectItem value="text-embedding-3-large">text-embedding-3-large</SelectItem>
+                          <SelectItem value="text-embedding-ada-002">text-embedding-ada-002</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="form-group">
-                    <label>Vector Store</label>
-                    <select
-                      value={vectorDatabase}
-                      onChange={(e) => setVectorDatabase(e.target.value)}
-                    >
-                      <option value="QDRANT">Qdrant</option>
-                      <option value="MILVUS">Milvus</option>
-                    </select>
+                    <Label>Vector Store</Label>
+                    <Select value={vectorDatabase} onValueChange={setVectorDatabase}>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select vector store" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="QDRANT">Qdrant</SelectItem>
+                          <SelectItem value="MILVUS">Milvus</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="form-group">
-                    <label>Top K Results</label>
-                    <input
+                    <Label>Top K Results</Label>
+                    <Input
                       type="number"
                       value={retrievalParams.topK}
                       onChange={(e) => setRetrievalParams(prev => ({
@@ -2002,20 +2094,20 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label>Similarity Threshold</label>
-                    <input
-                      type="range"
-                      value={retrievalParams.threshold}
-                      onChange={(e) => setRetrievalParams(prev => ({
-                        ...prev,
-                        threshold: Number(e.target.value)
-                      }))}
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      className="slider"
-                    />
-                    <span className="slider-value">{retrievalParams.threshold}</span>
+                    <Label>Similarity Threshold</Label>
+                    <div className="slider-container">
+                      <Slider
+                        value={[retrievalParams.threshold * 100]}
+                        onValueChange={(value) => setRetrievalParams(prev => ({
+                          ...prev,
+                          threshold: value[0] / 100
+                        }))}
+                        max={100}
+                        step={10}
+                        className="w-[100%]"
+                      />
+                      <span className="slider-value">{retrievalParams.threshold.toFixed(1)}</span>
+                    </div>
                   </div>
                 </>
               )}
@@ -2025,22 +2117,29 @@ print("Activity history:", history)
                 <>
                   <div className="section-title">Graph Database</div>
                   <div className="form-group">
-                    <label>Database Type</label>
-                    <select
-                      value={graphDbConfig.dbType}
-                      onChange={(e) => setGraphDbConfig(prev => ({
+                    <Label>Database Type</Label>
+                    <Select 
+                      value={graphDbConfig.dbType} 
+                      onValueChange={(value) => setGraphDbConfig(prev => ({
                         ...prev,
-                        dbType: e.target.value
+                        dbType: value
                       }))}
                     >
-                      <option value="neo4j">Neo4j</option>
-                      <option value="Nebula">Nebula</option>
-                    </select>
+                      <SelectTrigger className="short-select">
+                        <SelectValue placeholder="Select database type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="neo4j">Neo4j</SelectItem>
+                          <SelectItem value="Nebula">Nebula</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="form-group">
-                    <label>Database URI</label>
-                    <input
+                    <Label>Database URI</Label>
+                    <Input
                       type="text"
                       value={graphDbConfig.uri}
                       onChange={(e) => setGraphDbConfig(prev => ({
@@ -2053,8 +2152,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label>Username</label>
-                    <input
+                    <Label>Username</Label>
+                    <Input
                       type="text"
                       value={graphDbConfig.username}
                       onChange={(e) => setGraphDbConfig(prev => ({
@@ -2067,8 +2166,8 @@ print("Activity history:", history)
                   </div>
 
                   <div className="form-group">
-                    <label>Password</label>
-                    <input
+                    <Label>Password</Label>
+                    <Input
                       type="password"
                       value={graphDbConfig.password}
                       onChange={(e) => setGraphDbConfig(prev => ({
@@ -2084,7 +2183,7 @@ print("Activity history:", history)
 
               {/* 添加开始按钮 */}
               <div className="rag-action">
-                <button 
+                <Button 
                   className="start-rag-btn"
                   disabled={!documentSource || isLoading}
                   onClick={handleStartRAG}
@@ -2100,7 +2199,7 @@ print("Activity history:", history)
                       <span>Start {ragType.toUpperCase()} Process</span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -2118,8 +2217,8 @@ print("Activity history:", history)
               {/* API Configuration */}
               <div className="section-title">API Configuration</div>
               <div className="form-group">
-                <label>HumanLayer API Key</label>
-                <input
+                <Label>HumanLayer API Key</Label>
+                <Input
                   type="password"
                   value={humanLayerKey}
                   onChange={(e) => setHumanLayerKey(e.target.value)}
@@ -2131,8 +2230,8 @@ print("Activity history:", history)
               {/* Human Interaction Settings */}
               <div className="section-title">Human Interaction Settings</div>
               <div className="form-group">
-                <label>Response Timeout (seconds)</label>
-                <input
+                <Label>Response Timeout (seconds)</Label>
+                <Input
                   type="number"
                   value={humanInteractionConfig.timeout}
                   onChange={(e) => setHumanInteractionConfig(prev => ({
@@ -2146,7 +2245,7 @@ print("Activity history:", history)
               </div>
 
               <div className="form-group">
-                <label>Default Risk Level</label>
+                <Label>Default Risk Level</Label>
                 <select
                   value={humanInteractionConfig.defaultRisk}
                   onChange={(e) => setHumanInteractionConfig(prev => ({
@@ -2163,8 +2262,8 @@ print("Activity history:", history)
               {/* Notification Settings */}
               <div className="section-title">Notification Settings</div>
               <div className="notification-options">
-                <label className="checkbox-label">
-                  <input
+                <Label className="checkbox-label">
+                  <Input
                     type="checkbox"
                     checked={notificationSettings.email}
                     onChange={(e) => setNotificationSettings(prev => ({
@@ -2173,10 +2272,10 @@ print("Activity history:", history)
                     }))}
                   />
                   Email Notifications
-                </label>
+                </Label>
 
-                <label className="checkbox-label">
-                  <input
+                <Label className="checkbox-label">
+                  <Input
                     type="checkbox"
                     checked={notificationSettings.browser}
                     onChange={(e) => setNotificationSettings(prev => ({
@@ -2185,10 +2284,10 @@ print("Activity history:", history)
                     }))}
                   />
                   Browser Notifications
-                </label>
+                </Label>
 
-                <label className="checkbox-label">
-                  <input
+                <Label className="checkbox-label">
+                  <Input
                     type="checkbox"
                     checked={notificationSettings.slack}
                     onChange={(e) => setNotificationSettings(prev => ({
@@ -2197,7 +2296,7 @@ print("Activity history:", history)
                     }))}
                   />
                   Slack Notifications
-                </label>
+                </Label>
               </div>
 
               {/* Pending Approvals */}
@@ -2227,18 +2326,18 @@ print("Activity history:", history)
                       </div>
                     </div>
                     <div className="action-buttons">
-                      <button 
+                      <Button 
                         className="approve-btn"
                         onClick={() => handleApproval(item.id, 'approve')}
                       >
                         Approve
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         className="reject-btn"
                         onClick={() => handleApproval(item.id, 'reject')}
                       >
                         Reject
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -2396,12 +2495,12 @@ print("Activity history:", history)
         {/* 代码容器 */}
         <div className="code-container">
           <div className="copy-button-container">
-            <button
+            <Button
               className={`copy-button ${copySuccess ? 'success' : ''}`}
               onClick={copyCode}
             >
               {copySuccess ? 'Copied!' : 'Copy'}
-            </button>
+            </Button>
           </div>
           <pre><code>{getModuleCode(activeModule)}</code></pre>
         </div>
@@ -2443,7 +2542,7 @@ print("Activity history:", history)
                   }
                 }}
               />
-              <button 
+              <Button 
                 className="send-button"
                 disabled={isLoading || !userMessage.trim()}
                 onClick={handleSubmit}
@@ -2453,7 +2552,7 @@ print("Activity history:", history)
                 ) : (
                   'Send'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -2487,7 +2586,7 @@ print("Activity history:", history)
                   }
                 }}
               />
-              <button 
+              <Button 
                 className="send-button"
                 disabled={isLoading || !userMessage.trim()}
                 onClick={handleSubmit}
@@ -2497,7 +2596,7 @@ print("Activity history:", history)
                 ) : (
                   'Send'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -2506,20 +2605,43 @@ print("Activity history:", history)
   };
 
   return (
+    
     <div className="ai-playground-container">
-      <h1 className="title">CAMEL Agent Playground</h1>
+      <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    CAMEL Agent Playground
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        {/* <h1 className="title">CAMEL Agent Playground</h1> */}
       
       <div className="layout">
         {/* 左侧模块切换按钮 */}
         <div className="module-buttons">
           {modules.map((module) => (
-            <button
+            <Button
               key={module.id}
               className={`module-button ${activeModule === module.id ? 'active' : ''}`}
               onClick={() => handleModuleChange(module.id)}
             >
               {module.title}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -2531,6 +2653,18 @@ print("Activity history:", history)
         {/* 右侧代码和响应区域 */}
         {renderResponsePanel()}
       </div>
+        {/* <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div> */}
+      </SidebarInset>
+    </SidebarProvider>
+
+      
     </div>
   );
 };

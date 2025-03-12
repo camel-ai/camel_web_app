@@ -1,11 +1,10 @@
 .ai-playground-container {
-  background-color: #ffffff; /* 背景颜色 */
-  color: #333333; /* 字体颜色 */
-  padding: 40px; /* 增加内边距 */
+  /* background-color: #ffffff; 背景颜色 */
+  /* color: #333333; 字体颜色 */
   border-radius: 8px;
-  max-width: 95%; /* 增加最大宽度 */
+  /* max-width: 95%; 增加最大宽度 */
   margin: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
 }
 
 .title {
@@ -64,10 +63,11 @@ textarea {
 }
 
 .copy-button-container {
-  position: relative;
+  position: absolute;
   display: flex;
-  justify-content: flex-end; /* 右对齐 */
-  /* margin-bottom: 10px;  */
+  justify-content: flex-end;
+  top: 100px;
+  right: 50px;
 }
 
 .copy-button {
@@ -77,6 +77,7 @@ textarea {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  height: 30px;
   transition: background-color 0.3s, transform 0.3s; /* 添加动效 */
 }
 
@@ -93,6 +94,7 @@ textarea {
   margin-bottom: 20px;
   max-width: 100%; /* 固定最大宽度 */
   height: 400px;
+  text-align: left;
 }
 
 .code-container pre {
@@ -127,7 +129,7 @@ textarea {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 800px; /* 固定最大宽度 */
+  width: 900px; /* 固定最大宽度 */
 }
 
 .response-section {
@@ -154,7 +156,7 @@ textarea {
 .layout {
   display: flex; /* 使用flex布局 */
   justify-content: space-between; /* 左右分开 */
-  gap: 20px; /* 增加左右间距 */
+  /* gap: 20px; 增加左右间距 */
 }
 
 .parameter-panel {
@@ -163,11 +165,11 @@ textarea {
   padding: 20px; /* 左侧内边距 */
   border-radius: 8px; /* 圆角 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 400px; /* 固定最大宽度 */
+  width: 500px; /* 固定最大宽度 */
 }
 
 .short-select {
-  width: 95%; /* 设置选择框宽度 */
+  width: 90%; /* 设置选择框宽度 */
 }
 
 .short-select:hover {
@@ -199,9 +201,9 @@ textarea {
 
 .module-buttons {
   display: flex;
-  flex-direction: column; /* 垂直排列 */
-  margin-right: 5px; /* 右侧间距 */
-  width: 80px; /* 固定宽度 */
+  flex-direction: column;
+  margin-right: 5px;
+  /* width: 80px; 固定宽度 */
 }
 
 .module-button {
@@ -713,6 +715,7 @@ textarea {
   width: 100%;
   height: 4px;
   background: #ddd;
+  
   outline: none;
   -webkit-appearance: none;
 }
@@ -792,6 +795,7 @@ textarea {
   border-radius: 15px;
   background-color: #4B0082;
   color: white;
+  text-align: left;
 }
 
 .chat-interface:not(.rag-chat) .chat-message.user .message-content {
@@ -1240,6 +1244,7 @@ textarea {
   gap: 10px;
   margin-bottom: 20px;
   width: 100%;
+  font-size: 0.7em;
 }
 
 .tab-button {
