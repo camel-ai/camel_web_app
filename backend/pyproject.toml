@@ -8,8 +8,8 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10"
 uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
-fastapi = "^0.109.1"
-python-multipart = "^0.0.7"
+fastapi = {extras = ["standard"], version = "^0.115.11"}
+python-multipart = "<1.0.0,>=0.0.7"
 email-validator = "^2.2.0"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 tenacity = "^8.2.3"
