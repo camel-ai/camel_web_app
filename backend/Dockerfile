@@ -22,3 +22,5 @@ COPY ./scripts/ /app/
 COPY ./tests-start.sh /app/
 
 COPY ./app /app/app
+
+CMD ["fastapi", "run", "/app/main.py"]
