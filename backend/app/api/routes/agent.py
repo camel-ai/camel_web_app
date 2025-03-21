@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+ from fastapi import APIRouter
 from app.models.chat import ChatRequest
 from app.models.settings import Settings
 from typing import List, Dict, Any

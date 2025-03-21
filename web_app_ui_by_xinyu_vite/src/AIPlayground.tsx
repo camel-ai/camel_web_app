@@ -3,6 +3,8 @@ import './AIPlayground.css';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { CodeBlock } from "@/components/ui/code-block";
 import { AppSidebar } from "@/components/app-sidebar"
 import { cn } from "@/lib/utils"
 import { Slider } from "@/components/ui/slider"
@@ -57,6 +59,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Paperclip, Mic, CornerDownLeft } from "lucide-react";
+import { ChatInput } from "@/components/ui/chat-input";
 
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
@@ -860,35 +864,6 @@ print("Activity history:", history)
                 </Button> */}
               </div>
 
-              {/* Available Toolkits */}
-              <div className="form-group">
-                <Label className="toolkit-label" onClick={() => setShowToolkits(prev => !prev)}>
-                  Available Toolkits
-                  <span 
-                    className={`arrow ${showToolkits ? 'open' : 'closed'}`} 
-                  >
-                    {showToolkits ? '▲' : '▼'}
-                  </span>
-                </Label>
-                {showToolkits && (
-                  <div className="toolkit-options">
-                    {Object.keys(selectedTools).map(tool => (
-                      <Label key={tool} className="checkbox-label">
-                        <Input
-                          type="checkbox"
-                          checked={selectedTools[tool]}
-                          onChange={(e) => setSelectedTools(prev => ({
-                            ...prev,
-                            [tool]: e.target.checked
-                          }))}
-                        />
-                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
-                      </Label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
               {/* 根据选择的 API 类型渲染不同的输入框 */}
               {apiType === 'camel' && (
                 <>
@@ -1128,6 +1103,29 @@ print("Activity history:", history)
                   className="short-textarea"
                 />
               </div>
+
+              <div className="form-group">
+                <Label className="toolkit-label">
+                  Available Toolkits
+                </Label>
+                <div className="toolkit-options">
+                  {Object.keys(selectedTools).map(tool => (
+                    <div key={tool} className="flex items-center justify-between py-2">
+                      <Label htmlFor={`toolkit-${tool}`} className="text-sm">
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)}
+                      </Label>
+                      <Switch
+                        id={`toolkit-${tool}`}
+                        checked={selectedTools[tool]}
+                        onCheckedChange={(checked) => setSelectedTools(prev => ({
+                          ...prev,
+                          [tool]: checked
+                        }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -1186,34 +1184,27 @@ print("Activity history:", history)
                 </Button> */}
               </div>
 
-              {/* Available Toolkits */}
               <div className="form-group">
-                <Label className="toolkit-label" onClick={() => setShowAssistantToolkits(prev => !prev)}>
+                <Label className="toolkit-label">
                   Available Toolkits
-                  <span 
-                    className={`arrow ${showAssistantToolkits ? 'open' : 'closed'}`} 
-                    
-                  >
-                    {showAssistantToolkits ? '▲' : '▼'}
-                  </span>
                 </Label>
-                {showAssistantToolkits && (
-                  <div className="toolkit-options">
-                    {Object.keys(assistantSelectedToolkits).map(tool => (
-                      <Label key={tool} className="checkbox-label">
-                        <Input
-                          type="checkbox"
-                          checked={assistantSelectedToolkits[tool]}
-                          onChange={(e) => setAssistantSelectedToolkits(prev => ({
-                            ...prev,
-                            [tool]: e.target.checked
-                          }))}
-                        />
-                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
+                <div className="toolkit-options">
+                  {Object.keys(assistantSelectedToolkits).map(tool => (
+                    <div key={tool} className="flex items-center justify-between py-2">
+                      <Label htmlFor={`toolkit-${tool}`} className="text-sm">
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)}
                       </Label>
-                    ))}
-                  </div>
-                )}
+                      <Switch
+                        id={`toolkit-${tool}`}
+                        checked={assistantSelectedToolkits[tool]}
+                        onCheckedChange={(checked) => setAssistantSelectedToolkits(prev => ({
+                          ...prev,
+                          [tool]: checked
+                        }))}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* 根据选择的 API 类型渲染不同的输入框 */}
@@ -1483,33 +1474,27 @@ print("Activity history:", history)
                 </Button> */}
               </div>
 
-              {/* Available Toolkits */}
               <div className="form-group">
-                <Label className="toolkit-label" onClick={() => setShowUserToolkits(prev => !prev)}>
+                <Label className="toolkit-label">
                   Available Toolkits
-                  <span 
-                    className={`arrow ${showUserToolkits ? 'open' : 'closed'}`} 
-                  >
-                    {showUserToolkits ? '▲' : '▼'}
-                  </span>
                 </Label>
-                {showUserToolkits && (
-                  <div className="toolkit-options">
-                    {Object.keys(userSelectedToolkits).map(tool => (
-                      <Label key={tool} className="checkbox-label">
-                        <Input
-                          type="checkbox"
-                          checked={userSelectedToolkits[tool]}
-                          onChange={(e) => setUserSelectedToolkits(prev => ({
-                            ...prev,
-                            [tool]: e.target.checked
-                          }))}
-                        />
-                        {tool.charAt(0).toUpperCase() + tool.slice(1)} {/* 首字母大写 */}
+                <div className="toolkit-options">
+                  {Object.keys(userSelectedToolkits).map(tool => (
+                    <div key={tool} className="flex items-center justify-between py-2">
+                      <Label htmlFor={`toolkit-${tool}`} className="text-sm">
+                        {tool.charAt(0).toUpperCase() + tool.slice(1)}
                       </Label>
-                    ))}
-                  </div>
-                )}
+                      <Switch
+                        id={`toolkit-${tool}`}
+                        checked={userSelectedToolkits[tool]}
+                        onCheckedChange={(checked) => setUserSelectedToolkits(prev => ({
+                          ...prev,
+                          [tool]: checked
+                        }))}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* 根据选择的 API 类型渲染不同的输入框 */}
@@ -2494,15 +2479,11 @@ print("Activity history:", history)
 
         {/* 代码容器 */}
         <div className="code-container">
-          <div className="copy-button-container">
-            <Button
-              className={`copy-button ${copySuccess ? 'success' : ''}`}
-              onClick={copyCode}
-            >
-              {copySuccess ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-          <pre><code>{getModuleCode(activeModule)}</code></pre>
+          <CodeBlock
+            language="python"
+            filename={`${activeModule}.py`}
+            code={getModuleCode(activeModule)}
+          />
         </div>
 
         {/* Module1 和 Module2 的聊天窗口 */}
@@ -2525,15 +2506,20 @@ print("Activity history:", history)
               ))}
             </div>
 
-            <div className="chat-input-container">
-              <textarea
-                className="chat-input"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-1"
+            >
+              <ChatInput
                 value={userMessage}
                 onChange={(e) => setUserMessage(e.target.value)}
                 placeholder={
                   activeModule === 'Module1'
-                    ? "Ask agent anything..."
-                    : "Ask role-playing agent anything..."
+                    ? "Ask anything..."
+                    : "Ask questions about the role-playing session..."
                 }
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -2541,19 +2527,36 @@ print("Activity history:", history)
                     handleSubmit();
                   }
                 }}
+                className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
               />
-              <Button 
-                className="send-button"
-                disabled={isLoading || !userMessage.trim()}
-                onClick={handleSubmit}
-              >
-                {isLoading ? (
-                  <span className="loading-spinner"></span>
-                ) : (
-                  'Send'
-                )}
-              </Button>
-            </div>
+              <div className="flex items-center p-3 pt-0">
+                <Button variant="ghost" size="icon" type="button">
+                  <Paperclip className="size-4" />
+                  <span className="sr-only">Attachment</span>
+                </Button>
+
+                <Button variant="ghost" size="icon" type="button">
+                  <Mic className="size-4" />
+                  <span className="sr-only">Voice Input</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="ml-auto gap-1.5"
+                  disabled={isLoading || !userMessage.trim()}
+                  type="submit"
+                >
+                  {isLoading ? (
+                    <span className="loading-spinner"></span>
+                  ) : (
+                    <>
+                      Send Message
+                      <CornerDownLeft className="size-3.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
         )}
 
@@ -2573,9 +2576,14 @@ print("Activity history:", history)
               ))}
             </div>
 
-            <div className="chat-input-container">
-              <textarea
-                className="chat-input"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-1"
+            >
+              <ChatInput
                 value={userMessage}
                 onChange={(e) => setUserMessage(e.target.value)}
                 placeholder="Ask a question about your documents..."
@@ -2585,19 +2593,36 @@ print("Activity history:", history)
                     handleSubmit();
                   }
                 }}
+                className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
               />
-              <Button 
-                className="send-button"
-                disabled={isLoading || !userMessage.trim()}
-                onClick={handleSubmit}
-              >
-                {isLoading ? (
-                  <span className="loading-spinner"></span>
-                ) : (
-                  'Send'
-                )}
-              </Button>
-            </div>
+              <div className="flex items-center p-3 pt-0">
+                <Button variant="ghost" size="icon" type="button">
+                  <Paperclip className="size-4" />
+                  <span className="sr-only">附加文件</span>
+                </Button>
+
+                <Button variant="ghost" size="icon" type="button">
+                  <Mic className="size-4" />
+                  <span className="sr-only">使用麦克风</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="ml-auto gap-1.5"
+                  disabled={isLoading || !userMessage.trim()}
+                  type="submit"
+                >
+                  {isLoading ? (
+                    <span className="loading-spinner"></span>
+                  ) : (
+                    <>
+                      发送消息
+                      <CornerDownLeft className="size-3.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
         )}
       </div>
@@ -2608,7 +2633,7 @@ print("Activity history:", history)
     
     <div className="ai-playground-container">
       <SidebarProvider>
-      <AppSidebar />
+      {/* <AppSidebar /> */}
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

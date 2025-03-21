@@ -41,13 +41,13 @@
 label {
   display: block;
   margin-bottom: 5px;
-  color: #4B0082;
+  /* color: #4B0082; */
 }
 
 input, select, textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #4B0082;
+  /* border: 1px solid #4B0082; */
   border-radius: 4px;
   background-color: #ffffff;
   color: #333333;
@@ -66,7 +66,7 @@ textarea {
   position: absolute;
   display: flex;
   justify-content: flex-end;
-  top: 100px;
+  top: 150px;
   right: 50px;
 }
 
@@ -88,11 +88,11 @@ textarea {
 
 .code-container {
   background-color: #1e1e1e;
-  padding: 15px;
+  /* padding: 15px; */
   border-radius: 8px;
   overflow-x: auto;
   margin-bottom: 20px;
-  max-width: 100%; /* 固定最大宽度 */
+  max-width: 100%;
   height: 400px;
   text-align: left;
 }
@@ -124,12 +124,13 @@ textarea {
 }
 
 .response-panel {
-  flex: 2; /* 右侧占据2份 */
+  /* flex: 2; 右侧占据2份 */
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 900px; /* 固定最大宽度 */
+  width: 35%;
+  height: 100%;
 }
 
 .response-section {
@@ -145,7 +146,7 @@ textarea {
 .response-section textarea {
   width: calc(100% - 20px);
   padding: 10px;
-  border: 1px solid #4B0082;
+  /* border: 1px solid #4B0082; */
   border-radius: 4px;
   background-color: #ffffff;
   color: #333333;
@@ -165,7 +166,7 @@ textarea {
   padding: 20px; /* 左侧内边距 */
   border-radius: 8px; /* 圆角 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 500px; /* 固定最大宽度 */
+  width: 60%;
 }
 
 .short-select {
@@ -203,7 +204,7 @@ textarea {
   display: flex;
   flex-direction: column;
   margin-right: 5px;
-  /* width: 80px; 固定宽度 */
+  width: 10%;
 }
 
 .module-button {
@@ -774,7 +775,7 @@ textarea {
 
 /* Module1 和 Module2 特定的聊天样式 */
 .chat-interface:not(.rag-chat) {
-  border: 1px solid #4B0082;
+  /* border: 1px solid #4B0082; */
 }
 
 .chat-interface:not(.rag-chat) .chat-message {
@@ -1214,10 +1215,11 @@ textarea {
 }
 
 .toolkit-options {
-  display: flex;
   flex-direction: column; /* 垂直排列 */
   gap: 10px; /* 增加间距 */
-  margin-bottom: 20px; /* 增加底部间距 */
+  column-count: 2;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .checkbox-label:hover {
@@ -1268,17 +1270,11 @@ textarea {
 }
 
 .toolkit-label {
-  display: flex;
-  justify-content: space-between; /* 使标签和箭头分开 */
-  align-items: center; /* 垂直居中 */
-  cursor: pointer; /* 鼠标悬停时显示为手型 */
+  /* display: flex; */
+  /* justify-content: space-between; 使标签和箭头分开 */
+  /* align-items: center; 垂直居中 */
   padding: 10px;
-}
-
-.toolkit-label:hover {
-  color: #e0bbff; /* 悬停时颜色变化 */
-  background-color: #4c236a;
-  transition: all 0.3s ease;
+  left: 10px;
 }
 
 .arrow {
