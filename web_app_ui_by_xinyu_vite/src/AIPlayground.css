@@ -161,16 +161,15 @@ textarea {
 }
 
 .parameter-panel {
-  flex: 1; /* 左侧占据1份 */
+  flex: 1;
   background-color: #ffffff;
-  padding: 20px; /* 左侧内边距 */
-  border-radius: 8px; /* 圆角 */
+  padding: 20px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 60%;
 }
 
 .short-select {
-  width: 90%; /* 设置选择框宽度 */
+  width: 90%;
 }
 
 .short-select:hover {
