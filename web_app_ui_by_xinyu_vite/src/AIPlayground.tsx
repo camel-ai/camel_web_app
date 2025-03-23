@@ -68,6 +68,15 @@ import {
 } from "@/components/ui/resizable"
 import { CodeEditor } from "@/components/ui/code-editor"
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface ChatHistoryState {
+  [key: string]: ChatMessage[];
+}
+
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
   const [platformType, setPlatformType] = useState('OPENAI');
@@ -128,7 +137,12 @@ const AIPlayground = () => {
       risk: 'high'
     }
   ]);
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryState>({
+    Module1: [],
+    Module2: [],
+    Module3: [],
+    Module4: []
+  });
   const [humanInteractionConfig, setHumanInteractionConfig] = useState({
     timeout: 300,
     defaultRisk: 'medium'
@@ -658,32 +672,32 @@ print("Activity history:", history)
   }, [updateCodeExample]);
 
   const handleSubmit = async () => {
-    if (!userMessage.trim()) return;
-
-    // 添加用户消息到历史记录
-    setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
-    
-    // 清空输入框
-    setUserMessage('');
-    
-    // 设置加载状态
+    if (!userMessage.trim() || isLoading) return;
     setIsLoading(true);
 
     try {
-      // TODO:这里添加与后端的通信逻辑
-      // const response = await sendToBackend(userMessage);
+      // 更新当前模块的聊天历史
+      setChatHistory(prev => ({
+        ...prev,
+        [activeModule]: [...prev[activeModule], { role: 'user', content: userMessage }]
+      }));
       
-      // 模拟 AI 响应
+      setUserMessage('');
+
+      // 模拟AI响应
       setTimeout(() => {
-        setChatHistory(prev => [...prev, {
-          role: 'assistant',
-          content: 'This is a simulated response from the RAG-enhanced AI. In production, this would be replaced with actual API calls to your backend.'
-        }]);
+        setChatHistory(prev => ({
+          ...prev,
+          [activeModule]: [...prev[activeModule], {
+            role: 'assistant',
+            content: 'This is a simulated response from the AI. In production, this would be replaced with actual API calls to your backend.'
+          }]
+        }));
         setIsLoading(false);
       }, 1000);
     } catch (error) {
-      console.error('Error:', error);
       setIsLoading(false);
+      console.error('Error:', error);
     }
   };
 
@@ -2505,8 +2519,8 @@ print("Activity history:", history)
             </div>
             
             <div className="chat-history">
-              {chatHistory.map((msg, index) => (
-                <div key={index} className={`chat-message ${msg.role}`}>
+              {chatHistory[activeModule].map((msg, index) => (
+                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
                   <div className="message-content">{msg.content}</div>
                 </div>
               ))}
@@ -2575,8 +2589,8 @@ print("Activity history:", history)
             </div>
             
             <div className="chat-history">
-              {chatHistory.map((msg, index) => (
-                <div key={index} className={`chat-message ${msg.role}`}>
+              {chatHistory[activeModule].map((msg, index) => (
+                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
                   <div className="message-content">{msg.content}</div>
                 </div>
               ))}
@@ -2604,12 +2618,12 @@ print("Activity history:", history)
               <div className="flex items-center p-3 pt-0">
                 <Button variant="ghost" size="icon" type="button">
                   <Paperclip className="size-4" />
-                  <span className="sr-only">附加文件</span>
+                  <span className="sr-only">Attachment</span>
                 </Button>
 
                 <Button variant="ghost" size="icon" type="button">
                   <Mic className="size-4" />
-                  <span className="sr-only">使用麦克风</span>
+                  <span className="sr-only">Voice Input</span>
                 </Button>
 
                 <Button
@@ -2622,7 +2636,7 @@ print("Activity history:", history)
                     <span className="loading-spinner"></span>
                   ) : (
                     <>
-                      发送消息
+                      Send Message
                       <CornerDownLeft className="size-3.5" />
                     </>
                   )}
@@ -2641,25 +2655,7 @@ print("Activity history:", history)
       <SidebarProvider>
       {/* <AppSidebar /> */}
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    CAMEL Agent Playground
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
+        
         {/* <h1 className="title">CAMEL Agent Playground</h1> */}
       
       <div className="layout">
@@ -2679,7 +2675,26 @@ print("Activity history:", history)
         <ResizablePanelGroup direction="horizontal" className="flex-1">
           {/* 左侧参数栏 */}
           <ResizablePanel defaultSize={75} minSize={20}>
-            <div className="parameter-panel h-full overflow-auto">
+            <div className="parameter-panel h-full">
+            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    CAMEL Agent Playground
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
               {renderParameterPanel()}
             </div>
           </ResizablePanel>
@@ -2707,7 +2722,7 @@ print("Activity history:", history)
                   {/* 聊天响应区域 */}
                   <div className="chat-panel rounded-lg border bg-muted shadow-sm">
                     <div className="chat-history p-4 space-y-4">
-                      {chatHistory.map((msg, index) => (
+                      {chatHistory[activeModule].map((msg, index) => (
                         <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
                           <div className="message-content">{msg.content}</div>
                         </div>
@@ -2727,8 +2742,8 @@ print("Activity history:", history)
                           onChange={(e) => setUserMessage(e.target.value)}
                           placeholder={
                             activeModule === 'Module1'
-                              ? "向智能助手提问..."
-                              : "向角色扮演助手提问..."
+                              ? "Ask anything..."
+                              : "Ask questions to the role-playing assistant..."
                           }
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
@@ -2741,12 +2756,12 @@ print("Activity history:", history)
                         <div className="flex items-center p-3 pt-0">
                           <Button variant="ghost" size="icon" type="button">
                             <Paperclip className="size-4" />
-                            <span className="sr-only">附加文件</span>
+                            <span className="sr-only">Attachment</span>
                           </Button>
 
                           <Button variant="ghost" size="icon" type="button">
                             <Mic className="size-4" />
-                            <span className="sr-only">使用麦克风</span>
+                            <span className="sr-only">Voice Input</span>
                           </Button>
 
                           <Button
@@ -2759,7 +2774,7 @@ print("Activity history:", history)
                               <span className="loading-spinner"></span>
                             ) : (
                               <>
-                                发送消息
+                                Send Message
                                 <CornerDownLeft className="size-3.5" />
                               </>
                             )}

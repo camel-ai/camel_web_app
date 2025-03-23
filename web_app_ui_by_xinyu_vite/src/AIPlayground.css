@@ -1,10 +1,5 @@
 .ai-playground-container {
-  /* background-color: #ffffff; 背景颜色 */
-  /* color: #333333; 字体颜色 */
-  border-radius: 8px;
-  /* max-width: 95%; 增加最大宽度 */
-  margin: auto;
-  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
+  height: 100%;
 }
 
 .title {
@@ -55,11 +50,6 @@ input, select, textarea {
 
 input::placeholder, textarea::placeholder {
   color: #666666;
-}
-
-textarea {
-  resize: none; /* 禁止调整大小 */
-  height: 80px; /* 增加高度 */
 }
 
 .copy-button-container {
@@ -155,9 +145,8 @@ textarea {
 }
 
 .layout {
-  display: flex; /* 使用flex布局 */
-  justify-content: space-between; /* 左右分开 */
-  /* gap: 20px; 增加左右间距 */
+  display: flex;
+  justify-content: space-between;
 }
 
 .parameter-panel {
