@@ -141,7 +141,8 @@ const AIPlayground = () => {
     Module1: [],
     Module2: [],
     Module3: [],
-    Module4: []
+    Module4: [],
+    Module5: []  // 添加Module5的初始化
   });
   const [humanInteractionConfig, setHumanInteractionConfig] = useState({
     timeout: 300,
@@ -252,9 +253,13 @@ const AIPlayground = () => {
     { id: 'Module6', title: 'Human-in-the-loop' }
   ];
 
-  const handleModuleChange = (module) => {
+  const handleModuleChange = (module: string) => {
     setActiveModule(module);
-    // 这里可以添加切换模块时的逻辑
+    // 如果切换到的模块没有聊天记录，初始化一个空数组
+    setChatHistory(prev => ({
+      ...prev,
+      [module]: prev[module] || []
+    }));
   };
 
   const platformOptions = [
