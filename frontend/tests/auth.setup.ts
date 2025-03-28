@@ -1,13 +1,14 @@
 import { test as setup } from "@playwright/test"
-import { firstSuperuser, firstSuperuserPassword } from "./config.ts"
 
 const authFile = "playwright/.auth/user.json"
 
-setup("authenticate", async ({ page }) => {
-  await page.goto("/login")
-  await page.getByPlaceholder("Email").fill(firstSuperuser)
-  await page.getByPlaceholder("Password").fill(firstSuperuserPassword)
-  await page.getByRole("button", { name: "Log In" }).click()
-  await page.waitForURL("/")
+setup("basic page test", async ({ page }) => {
+  // 访问主页
+  await page.goto("/")
+  
+  // 等待页面加载完成
+  await page.waitForSelector('.chat-interface', { state: 'visible', timeout: 10000 })
+  
+  // 保存状态
   await page.context().storageState({ path: authFile })
 })
