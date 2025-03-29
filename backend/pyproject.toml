@@ -17,6 +17,7 @@ gunicorn = "^22.0.0"
 # Pin bcrypt until passlib supports the latest
 pydantic-settings = "^2.2.1"
 sentry-sdk = {extras = ["fastapi"], version = "^1.40.6"}
+camel-ai = {extras = ["all"], version = "^0.2.38"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
