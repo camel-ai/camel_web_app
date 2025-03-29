@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 
-from app.api.routes import login, users, tasks,settings,rag,workflow,approval,mock_data,human,agent,rolePlaying,camel
+from app.api.routes import (
+    settings,
+    rag,
+    workflow,
+    approval,
+    mock_data,
+    human,
+    agent,
+    rolePlaying,
+    camel,
+)
 
 api_router = APIRouter()
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
