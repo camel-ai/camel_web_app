@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { CodeBlock } from "@/components/ui/code-block";
 import { AppSidebar } from "@/components/app-sidebar"
-import { cn } from "@/lib/utils"
+import { cn } from "@/library/utils"
 import { Slider } from "@/components/ui/slider"
 import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage, ChatBubbleAction, ChatBubbleActionWrapper } from '@/components/ui/chat/chat-bubble'
 import {

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { X, MessageCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/library/utils";
 import { Button } from "@/components/ui/button";
 
 export type ChatPosition = "bottom-right" | "bottom-left";
