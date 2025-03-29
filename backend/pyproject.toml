@@ -10,26 +10,16 @@ python = "^3.10"
 camel-ai = "*"
 camel-ai-tools = {extras = ["tools"], version = "*"}
 uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
-fastapi = "^0.109.1"
-python-multipart = "^0.0.7"
-email-validator = "^2.2.0"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+fastapi = {extras = ["standard"], version = "^0.115.11"}
+python-multipart = "<1.0.0,>=0.0.7"
 tenacity = "^8.2.3"
 pydantic = ">2.0"
 
 gunicorn = "^22.0.0"
-alembic = "^1.12.1"
 httpx = "^0.25.1"
-psycopg = {extras = ["binary"], version = "^3.1.13"}
-sqlmodel = "^0.0.21"
 # Pin bcrypt until passlib supports the latest
-bcrypt = "4.0.1"
 pydantic-settings = "^2.2.1"
 sentry-sdk = {extras = ["fastapi"], version = "^1.40.6"}
-pyjwt = "^2.8.0"
-celery = "^5.4.0"
-redis = "^5.2.0"
-flower = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
