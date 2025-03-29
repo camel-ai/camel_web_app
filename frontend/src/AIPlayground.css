@@ -158,7 +158,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .short-select {
-  width: 90%;
+  width: 100%;
+  /* @media (min-width: 1080px) {
+    width: 486px;
+  } */
 }
 
 .short-select:hover {
@@ -168,7 +171,6 @@ input::placeholder, textarea::placeholder {
 }
 
 .short-input {
-  width: 90%; /* 设置输入框宽度 */
 }
 
 .short-input:hover {
@@ -178,14 +180,13 @@ input::placeholder, textarea::placeholder {
 }
 
 .short-input-disabled {
-  width: 90%; /* 设置输入框宽度 */
   background-color: #e0e0e0; /* 设置输入框背景颜色 */
   color: #666666; /* 设置输入框字体颜色 */
 }
 
 .short-textarea {
-  width: 90%; /* 设置文本区域宽度 */
-  height: 60px; /* 设置文本区域高度 */
+  /* width: 90%; */
+  height: 80px; /* 设置文本区域高度 */
 }
 
 .module-buttons {

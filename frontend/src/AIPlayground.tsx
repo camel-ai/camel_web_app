@@ -283,6 +283,11 @@ const AIPlayground = () => {
     temperature: 0.4,
     maxTokens: 4096,
   });
+  const [humanToolkit, setHumanToolkit] = useState({
+    enabled: false,
+    timeout: 60,
+    defaultRisk: 'low'
+  });
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -625,108 +630,37 @@ print(combined_results)
 `;
 
       case 'Module6':
-        return `from camel.human import HumanLayer
-from camel.agents import ChatAgent
+        return `from camel.agents import ChatAgent
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
-from camel.configs import HumanInteractionConfig
+from camel.toolkits import HumanToolkit
 
-# 1. Initialize Human Layer with configured settings
-human_layer = HumanLayer(
-    api_key="${humanLayerKey}",  # From API Configuration
-    notification_settings={
-        "email": ${notificationSettings.email},  # From Notification Settings
-        "browser": ${notificationSettings.browser},
-        "slack": ${notificationSettings.slack}
-    }
-)
-
-# 2. Configure human interaction settings
-interaction_config = HumanInteractionConfig(
-    timeout_seconds=${humanInteractionConfig.timeout},  # From Human Interaction Settings
-    default_risk_level="${humanInteractionConfig.defaultRisk}"
-)
-
-# 3. Initialize AI model with human-in-the-loop capabilities
+# 初始化模型
 model = ModelFactory.create(
     model_platform=ModelPlatformType.${platformType},
-    model_type=ModelType.${modelType}
+    model_type=ModelType.${modelType},
+    temperature=${temperature},
+    max_tokens=${maxTokens}
 )
 
+# 初始化人机交互工具包
+human_toolkit = HumanToolkit(
+    timeout_seconds=${humanToolkit.timeout}
+)
+
+# 创建带有人机交互能力的Agent
 agent = ChatAgent(
     model=model,
-    human_layer=human_layer,
-    interaction_config=interaction_config
+    system_message="${systemMessage || '我是一个能够与人类进行交互的AI助手'}",
+    tools=[*human_toolkit.get_tools()] if ${humanToolkit.enabled} else []
 )
 
-# 4. Current pending approvals (from Pending Approvals section)
-pending_approvals = [
-    ${pendingApprovals.map(item => `{
-        "id": "${item.id}",
-        "tool": "${item.tool}",
-        "risk": "${item.risk}",
-        "description": "${item.description}",
-        "context": {
-            "purpose": "${item.context.purpose}",
-            "impact": "${item.context.impact}"
-        }
-    }`).join(',\n    ')}
-]
-
-# 5. Recent activity log (from Recent Activity section)
-activity_history = [
-    ${recentActivity.map(activity => `{
-        "id": "${activity.id}",
-        "type": "${activity.type}",
-        "timestamp": "${activity.timestamp}",
-        "description": "${activity.description}"
-    }`).join(',\n    ')}
-]
-
-# Example usage of human-in-the-loop functionality
-def execute_with_approval(action, data, risk_level=None):
-    """Execute action with human approval based on risk level."""
-    risk = risk_level or interaction_config.default_risk_level
-    
-    # Request human approval
-    approval_request = human_layer.request_approval(
-        action=action,
-        data=data,
-        risk_level=risk,
-        context={
-            "purpose": "Sensitive operation execution",
-            "impact": f"{risk.capitalize()} risk operation",
-            "requested_by": "AI Agent",
-            "timestamp": "${new Date().toISOString()}"
-        }
-    )
-    
-    if approval_request.approved:
-        return f"Executing {action} with approved data: {data}"
-    else:
-        return f"Operation {action} was rejected by human supervisor"
-
-# Example workflow
-response = agent.step("I need to perform a sensitive operation.")
-print("Agent response:", response.content)
-
-# Request human approval for a sensitive operation
-result = execute_with_approval(
-    action="access_sensitive_data",
-    data="user_records.db",
-    risk_level="high"
-)
-print("Operation result:", result)
-
-# Get current approval status and history
-pending = human_layer.get_pending_approvals()
-history = human_layer.get_activity_history()
-print("Pending approvals:", pending)
-print("Activity history:", history)
-`;
+# 开始对话
+response = agent.step("${userMessage || '你好,我需要你的帮助'}")
+print(response.msgs[0].content)`;
 
       default:
-        return '';
+        return getModuleCode(activeModule);
     }
   };
 
@@ -743,7 +677,7 @@ print("Activity history:", history)
 
   const callLLMAPI = async (message: string, config: AgentConfig) => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || '';
-    const API_PATH = '/api/v1/camel/chat';
+    const API_PATH = '/api/routes/camel/chat';
     const fullUrl = `${API_BASE_URL}${API_PATH}`;
 
     console.log('正在发送请求到API...');
@@ -2385,164 +2319,34 @@ print("Activity history:", history)
         );
       
       case 'Module6':
-        return (
-          <div className="module-content">
-            <div className="card">
-              <h3>Human-in-the-loop Configuration</h3>
-              <p>Configure human interaction and approval settings.</p>
-            </div>
+        return `from camel.agents import ChatAgent
+from camel.models import ModelFactory
+from camel.types import ModelPlatformType, ModelType
+from camel.toolkits import HumanToolkit
 
-            <div className="form">
-              {/* API Configuration */}
-              <div className="section-title">API Configuration</div>
-              <div className="form-group">
-                <Label>HumanLayer API Key</Label>
-                <Input
-                  type="password"
-                  value={humanLayerKey}
-                  onChange={(e) => setHumanLayerKey(e.target.value)}
-                  placeholder="Enter HumanLayer API key"
-                  className="short-input"
-                />
-              </div>
+# 初始化模型
+model = ModelFactory.create(
+    model_platform=ModelPlatformType.${platformType},
+    model_type=ModelType.${modelType},
+    temperature=${temperature},
+    max_tokens=${maxTokens}
+)
 
-              {/* Human Interaction Settings */}
-              <div className="section-title">Human Interaction Settings</div>
-              <div className="form-group">
-                <Label>Response Timeout (seconds)</Label>
-                <Input
-                  type="number"
-                  value={humanInteractionConfig.timeout}
-                  onChange={(e) => setHumanInteractionConfig(prev => ({
-                    ...prev,
-                    timeout: Number(e.target.value)
-                  }))}
-                  min="30"
-                  max="3600"
-                  className="short-input"
-                />
-              </div>
+# 初始化人机交互工具包
+human_toolkit = HumanToolkit(
+    timeout_seconds=${humanToolkit.timeout}
+)
 
-              <div className="form-group">
-                <Label>Default Risk Level</Label>
-                <select
-                  value={humanInteractionConfig.defaultRisk}
-                  onChange={(e) => setHumanInteractionConfig(prev => ({
-                    ...prev,
-                    defaultRisk: e.target.value
-                  }))}
-                >
-                  <option value="low">Low Risk</option>
-                  <option value="medium">Medium Risk</option>
-                  <option value="high">High Risk</option>
-                </select>
-              </div>
+# 创建带有人机交互能力的Agent
+agent = ChatAgent(
+    model=model,
+    system_message="${systemMessage || '我是一个能够与人类进行交互的AI助手'}",
+    tools=[*human_toolkit.get_tools()] if ${humanToolkit.enabled} else []
+)
 
-              {/* Notification Settings */}
-              <div className="section-title">Notification Settings</div>
-              <div className="notification-options">
-                <Label className="checkbox-label">
-                  <Input
-                    type="checkbox"
-                    checked={notificationSettings.email}
-                    onChange={(e) => setNotificationSettings(prev => ({
-                      ...prev,
-                      email: e.target.checked
-                    }))}
-                  />
-                  Email Notifications
-                </Label>
-
-                <Label className="checkbox-label">
-                  <Input
-                    type="checkbox"
-                    checked={notificationSettings.browser}
-                    onChange={(e) => setNotificationSettings(prev => ({
-                      ...prev,
-                      browser: e.target.checked
-                    }))}
-                  />
-                  Browser Notifications
-                </Label>
-
-                <Label className="checkbox-label">
-                  <Input
-                    type="checkbox"
-                    checked={notificationSettings.slack}
-                    onChange={(e) => setNotificationSettings(prev => ({
-                      ...prev,
-                      slack: e.target.checked
-                    }))}
-                  />
-                  Slack Notifications
-                </Label>
-              </div>
-
-              {/* Pending Approvals */}
-              <div className="section-title">Pending Approvals</div>
-              <div className="approval-list">
-                {pendingApprovals.map((item) => (
-                  <div key={item.id} className="approval-request">
-                    <div className="request-header">
-                      <span className="tool-name">{item.tool}</span>
-                      <span className={`risk-badge ${item.risk}`}>{item.risk} risk</span>
-                    </div>
-                    <div className="request-content">
-                      <p>{item.description}</p>
-                      <div className="context-info">
-                        <span>Requested by: {item.requestedBy}</span>
-                        <span>Time: {item.timestamp}</span>
-                      </div>
-                      <div className="additional-context">
-                        <div className="context-item">
-                          <span className="context-label">Purpose:</span>
-                          <span>{item.context.purpose}</span>
-                        </div>
-                        <div className="context-item">
-                          <span className="context-label">Impact:</span>
-                          <span>{item.context.impact}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="action-buttons">
-                      <Button 
-                        className="approve-btn"
-                        onClick={() => handleApproval(item.id, 'approve')}
-                      >
-                        Approve
-                      </Button>
-                      <Button 
-                        className="reject-btn"
-                        onClick={() => handleApproval(item.id, 'reject')}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Recent Activity */}
-              <div className="section-title">Recent Activity</div>
-              <div className="activity-list">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="activity-item">
-                    <div className="activity-icon">
-                      {activity.type === 'approval' ? '✓' : activity.type === 'rejection' ? '✗' : '!'}
-                    </div>
-                    <div className="activity-content">
-                      <div className="activity-header">
-                        <span className="activity-type">{activity.type}</span>
-                        <span className="activity-time">{activity.timestamp}</span>
-                      </div>
-                      <p className="activity-description">{activity.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
+# 开始对话
+response = agent.step("${userMessage || '你好,我需要你的帮助'}")
+print(response.msgs[0].content)`;
 
       default:
         return getModuleCode(activeModule);
@@ -2855,6 +2659,43 @@ print("Activity history:", history)
             </form>
           </div>
         )}
+
+        {activeModule === 'Module6' && (
+          <div className="chat-interface">
+            <div className="chat-title">
+              <h3>与AI助手对话</h3>
+              <p className="chat-hint">
+                AI助手会在需要时向你询问问题
+              </p>
+            </div>
+            
+            <div className="chat-history">
+              {chatHistory[activeModule]?.map((msg, index) => (
+                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
+                  <div className="message-content">{msg.content}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="chat-input">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}>
+                <Input
+                  type="text"
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
+                  placeholder="输入你的消息..."
+                  className="chat-input-field"
+                />
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? '发送中...' : '发送'}
+                </Button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -2961,7 +2802,7 @@ print("Activity history:", history)
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
+                    <BreadcrumbPage>{activeModule}</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
