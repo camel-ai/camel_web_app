@@ -8,6 +8,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { AppSidebar } from "@/components/app-sidebar"
 import { cn } from "@/lib/utils"
 import { Slider } from "@/components/ui/slider"
+import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage, ChatBubbleAction, ChatBubbleActionWrapper } from '@/components/ui/chat/chat-bubble'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +60,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Paperclip, Mic, CornerDownLeft } from "lucide-react";
+import { Paperclip, Mic, CornerDownLeft, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
 import { ChatInput } from "@/components/ui/chat-input";
 import {
   ResizableHandle,
@@ -68,6 +69,7 @@ import {
 } from "@/components/ui/resizable"
 import { CodeEditor } from "@/components/ui/code-editor"
 import axios from 'axios';
+import { ChatMessageList } from '@/components/ui/chat/chat-message-list'
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -80,17 +82,38 @@ interface ChatHistoryState {
 
 interface AgentConfig {
   systemMessage: string;
-  platformType: string;
-  modelType: string;
+  platformType: ModelPlatformType;
+  modelType: ModelType;
   baseUrl?: string;
+  temperature: number;
+  maxTokens: number;
+}
+
+enum ModelPlatformType {
+  OPENAI = "OPENAI",
+  ANTHROPIC = "ANTHROPIC",
+  MISTRALAI = "MISTRALAI",
+  QWEN = "QWEN",
+  DEEPSEEK = "DEEPSEEK"
+}
+
+enum ModelType {
+  GPT_4 = "GPT_4",
+  GPT_35_TURBO = "GPT_35_TURBO",
+  CLAUDE_2 = "CLAUDE_2",
+  CLAUDE_INSTANT = "CLAUDE_INSTANT",
+  MISTRAL_7B = "MISTRAL_7B",
+  MIXTRAL_8X7B = "MIXTRAL_8X7B",
+  QWEN_72B = "QWEN_72B",
+  DEEPSEEK_67B = "DEEPSEEK_67B"
 }
 
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
-  const [platformType, setPlatformType] = useState('OPENAI');
-  const [modelType, setModelType] = useState('GPT_4');
-  const [temperature, setTemperature] = useState(0.4);
-  const [maxTokens, setMaxTokens] = useState(4096);
+  const [platformType, setPlatformType] = useState<ModelPlatformType>(ModelPlatformType.OPENAI);
+  const [modelType, setModelType] = useState<ModelType>(ModelType.GPT_4);
+  const [temperature, setTemperature] = useState<number>(0.7);
+  const [maxTokens, setMaxTokens] = useState<number>(2000);
   const [apiKey, setApiKey] = useState('');
   const [systemMessage, setSystemMessage] = useState('');
   const [userMessage, setUserMessage] = useState('');
@@ -255,8 +278,10 @@ const AIPlayground = () => {
   const [userInput, setUserInput] = useState('');
   const [config, setConfig] = useState<AgentConfig>({
     systemMessage: 'You are a curious stone wondering about the universe.',
-    platformType: 'OPENAI',
-    modelType: 'GPT_4',
+    platformType: ModelPlatformType.OPENAI,
+    modelType: ModelType.GPT_4,
+    temperature: 0.4,
+    maxTokens: 4096,
   });
 
   const modules = [
@@ -278,11 +303,11 @@ const AIPlayground = () => {
   };
 
   const platformOptions = [
-    { value: 'OPENAI', label: 'OpenAI' },
-    { value: 'MISTRALAI', label: 'MistralAI' },
-    { value: 'ANTHROPIC', label: 'Anthropic' },
-    { value: 'QWEN', label: 'Qwen' },
-    { value: 'DEEPSEEK', label: 'DeepSeek' },
+    { value: ModelPlatformType.OPENAI, label: 'OpenAI' },
+    { value: ModelPlatformType.ANTHROPIC, label: 'Anthropic' },
+    { value: ModelPlatformType.MISTRALAI, label: 'Mistral AI' },
+    { value: ModelPlatformType.QWEN, label: 'Qwen' },
+    { value: ModelPlatformType.DEEPSEEK, label: 'DeepSeek' },
   ];
 
   const modelOptions = {
@@ -337,7 +362,7 @@ const AIPlayground = () => {
       ],
   };
 
-  const getModuleCode = (moduleType) => {
+  const getModuleCode = (moduleType: string) => {
     switch (moduleType) {
       case 'Module1':
         return `from camel.agents import ChatAgent
@@ -348,9 +373,10 @@ from camel.types import ModelPlatformType, ModelType
 model = ModelFactory.create(
   model_platform=ModelPlatformType.${platformType},
   model_type=ModelType.${modelType},
-  api_key="${apiKey}",
-  url="${baseUrl}",
-  model_config_dict=ChatGPTConfig(temperature=0.0).as_dict(),(temperature=0.0).as_dict(),
+  model_config_dict=ChatGPTConfig(
+    temperature=${temperature},
+    max_tokens=${maxTokens}
+  ).as_dict(),
 )
 
 camel_agent = ChatAgent(
@@ -363,24 +389,48 @@ print(response.msgs[0].content)
 `;
 
       case 'Module2':
-        return `from camel.agents import RolePlaying
+        return `from camel.agents import ChatAgent
 from camel.configs import ChatGPTConfig
 from camel.models import ModelFactory
+from camel.types import ModelPlatformType, ModelType
 
-# Initialize the role-playing session
-role_playing = RolePlaying(
-    assistant_role_name="${assistantRole || 'Assistant'}",
-    user_role_name="${userRole || 'User'}",
-    task_prompt="${taskPrompt || 'Default task'}",
-    output_language="${outputLanguage}",
-    model_config=ChatGPTConfig(temperature=0.7)
+# 创建助手 Agent
+assistant_model = ModelFactory.create(
+  model_platform=ModelPlatformType.${platformType},
+  model_type=ModelType.${modelType},
+  model_config_dict=ChatGPTConfig(
+    temperature=${temperature},
+    max_tokens=${maxTokens}
+  ).as_dict(),
 )
 
-# Start the conversation
-while True:
-    user_input = input("User: ")
-    response = role_playing.step(user_input)
-    print(f"Assistant: {response.assistant_message}")
+assistant_agent = ChatAgent(
+    model=assistant_model,
+    system_message="${systemMessage}",
+)
+
+# 创建用户 Agent
+user_model = ModelFactory.create(
+  model_platform=ModelPlatformType.${platformType},
+  model_type=ModelType.${modelType},
+  model_config_dict=ChatGPTConfig(
+    temperature=${temperature},
+    max_tokens=${maxTokens}
+  ).as_dict(),
+)
+
+user_agent = ChatAgent(
+    model=user_model,
+    system_message="You are a ${userRole}. ${systemMessage}"
+)
+
+# 开始对话
+assistant_msg = "${userMessage}"
+user_response = user_agent.step(assistant_msg)
+print(f"User ({userRole}): {user_response.msgs[0].content}")
+
+assistant_response = assistant_agent.step(user_response.msgs[0].content)
+print(f"Assistant ({assistantRole}): {assistant_response.msgs[0].content}")
 `;
 
       case 'Module3':
@@ -676,7 +726,7 @@ print("Activity history:", history)
 `;
 
       default:
-        return null;
+        return '';
     }
   };
 
@@ -691,10 +741,78 @@ print("Activity history:", history)
     updateCodeExample();
   }, [updateCodeExample]);
 
-  const handleSubmit = async () => {
-    if (!userMessage.trim() || isLoading) return;
-    setIsLoading(true);
+  const callLLMAPI = async (message: string, config: AgentConfig) => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+    const API_PATH = '/api/v1/camel/chat';
+    const fullUrl = `${API_BASE_URL}${API_PATH}`;
 
+    console.log('正在发送请求到API...');
+    console.log('API基础URL:', API_BASE_URL);
+    console.log('API路径:', API_PATH);
+    console.log('完整URL:', fullUrl);
+    console.log('请求参数:', {
+      user_message: message,
+      system_message: config.systemMessage,
+      platform_type: config.platformType,
+      model_type: config.modelType,
+      base_url: config.baseUrl,
+      api_key: apiKey,
+      temperature: config.temperature,
+      max_tokens: config.maxTokens
+    });
+
+    try {
+      const response = await axios.post(fullUrl, {
+        user_message: message,
+        system_message: config.systemMessage,
+        platform_type: config.platformType,
+        model_type: config.modelType,
+        base_url: config.baseUrl,
+        api_key: apiKey,
+        temperature: config.temperature,
+        max_tokens: config.maxTokens
+      });
+
+      console.log('API响应状态:', response.status);
+      console.log('API响应头:', response.headers);
+      console.log('API响应数据:', response.data);
+      
+      if (!response.data || !response.data.content) {
+        throw new Error("Invalid response from server");
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('API请求失败:', error);
+      if (error.response) {
+        console.error('错误响应:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      } else if (error.request) {
+        console.error('请求发送失败:', error.request);
+      } else {
+        console.error('请求配置错误:', error.message);
+      }
+      throw error;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!userMessage.trim() || !apiKey) {
+      setChatHistory(prev => ({
+        ...prev,
+        [activeModule]: [...prev[activeModule], {
+          role: 'assistant',
+          content: 'please input api key and user message'
+        }]
+      }));
+      return;
+    }
+
+    setIsLoading(true);
     try {
       // 更新当前模块的聊天历史
       setChatHistory(prev => ({
@@ -704,20 +822,40 @@ print("Activity history:", history)
       
       setUserMessage('');
 
-      // 模拟AI响应
-      setTimeout(() => {
-        setChatHistory(prev => ({
-          ...prev,
-          [activeModule]: [...prev[activeModule], {
-            role: 'assistant',
-            content: 'This is a simulated response from the AI. In production, this would be replaced with actual API calls to your backend.'
-          }]
-        }));
-        setIsLoading(false);
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
+      // 准备 API 配置
+      const config: AgentConfig = {
+        systemMessage: systemMessage || 'You are a helpful AI assistant.',
+        platformType: ModelPlatformType.DEEPSEEK,
+        modelType: ModelType.DeepSeek-Chat,
+        temperature: 0.4,
+        maxTokens: 4096,
+        baseUrl: undefined
+      };
+
+      // 调用 LLM API
+      const response = await callLLMAPI(userMessage, config);
+
+      // 更新聊天历史
+      setChatHistory(prev => ({
+        ...prev,
+        [activeModule]: [...prev[activeModule], {
+          role: response.role,
+          content: response.content
+        }]
+      }));
+
+    } catch (error: any) {
       console.error('Error:', error);
+      // 显示错误消息
+      setChatHistory(prev => ({
+        ...prev,
+        [activeModule]: [...prev[activeModule], {
+          role: 'assistant',
+          content: 'Sorry, something went wrong:' + (error.response?.data?.detail || error.message || 'unknown error')
+        }]
+      }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -865,7 +1003,7 @@ print("Activity history:", history)
             <div className="form">
               {/* API 类型选择标签页 */}
               <div className="tab-container">
-              <Tabs defaultValue="camel" className="w-[600px]">
+              <Tabs defaultValue="camel" className="w-600">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger 
                   onClick={() => setApiType('camel')}
@@ -1019,24 +1157,29 @@ print("Activity history:", history)
                   <div className="form-group">
                     <Label htmlFor="temperature">temperature</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="temperature"
                       value={temperature}
-                      onChange={(e) => setTemperature(e.target.value)}
+                      onChange={(e) => handleTemperatureChange(e.target.value)}
                       placeholder="Enter temperature"
                       className="short-input"
+                      min="0"
+                      max="1"
+                      step="0.1"
                     />
                   </div>
 
                   <div className="form-group">
                     <Label htmlFor="maxTokens">max_tokens</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="maxTokens"
                       value={maxTokens}
-                      onChange={(e) => setMaxTokens(e.target.value)}
+                      onChange={(e) => handleMaxTokensChange(e.target.value)}
                       placeholder="Enter max tokens"
                       className="short-input"
+                      min="1"
+                      step="1"
                     />
                   </div>
                 </>
@@ -1140,7 +1283,7 @@ print("Activity history:", history)
                   value={systemMessage}
                   onChange={(e) => setSystemMessage(e.target.value)}
                   placeholder="Enter system message here..."
-                  className="short-textarea"
+                  className="short-textarea border-2 border-gray-300 rounded-md"
                 />
               </div>
 
@@ -1150,7 +1293,7 @@ print("Activity history:", history)
                 </Label>
                 <div className="toolkit-options">
                   {Object.keys(selectedTools).map(tool => (
-                    <div key={tool} className="flex items-center justify-between py-2">
+                    <div key={tool} className="flex items-center justify-between py-2 px-3">
                       <Label htmlFor={`toolkit-${tool}`} className="text-sm">
                         {tool.charAt(0).toUpperCase() + tool.slice(1)}
                       </Label>
@@ -1357,24 +1500,29 @@ print("Activity history:", history)
                   <div className="form-group">
                     <Label htmlFor="temperature">temperature</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="temperature"
                       value={temperature}
-                      onChange={(e) => setTemperature(e.target.value)}
+                      onChange={(e) => handleTemperatureChange(e.target.value)}
                       placeholder="Enter temperature"
                       className="short-input"
+                      min="0"
+                      max="1"
+                      step="0.1"
                     />
                   </div>
 
                   <div className="form-group">
                     <Label htmlFor="maxTokens">max_tokens</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="maxTokens"
                       value={maxTokens}
-                      onChange={(e) => setMaxTokens(e.target.value)}
+                      onChange={(e) => handleMaxTokensChange(e.target.value)}
                       placeholder="Enter max tokens"
                       className="short-input"
+                      min="1"
+                      step="1"
                     />
                   </div>
                 </>
@@ -1647,24 +1795,29 @@ print("Activity history:", history)
                   <div className="form-group">
                     <Label htmlFor="temperature">temperature</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="temperature"
                       value={temperature}
-                      onChange={(e) => setTemperature(e.target.value)}
+                      onChange={(e) => handleTemperatureChange(e.target.value)}
                       placeholder="Enter temperature"
                       className="short-input"
+                      min="0"
+                      max="1"
+                      step="0.1"
                     />
                   </div>
 
                   <div className="form-group">
                     <Label htmlFor="maxTokens">max_tokens</Label>
                     <Input
-                      type="text"
+                      type="number"
                       id="maxTokens"
                       value={maxTokens}
-                      onChange={(e) => setMaxTokens(e.target.value)}
+                      onChange={(e) => handleMaxTokensChange(e.target.value)}
                       placeholder="Enter max tokens"
                       className="short-input"
+                      min="1"
+                      step="1"
                     />
                   </div>
                 </>
@@ -2063,6 +2216,7 @@ print("Activity history:", history)
                       accept=".pdf,.txt,.doc,.docx"
                       style={{ display: 'none' }}
                     />
+                    
                     <Label htmlFor="documentUpload" className="upload-button">
                       <i className="upload-icon">📄</i>
                       Upload Documents
@@ -2518,7 +2672,7 @@ print("Activity history:", history)
         )}
 
         {/* 代码容器 */}
-        <div className="code-container">
+        <div className="code-container margin-bottom: 5px">
           <CodeBlock
             language="python"
             filename={`${activeModule}.py`}
@@ -2539,11 +2693,29 @@ print("Activity history:", history)
             </div>
             
             <div className="chat-history">
-              {chatHistory[activeModule].map((msg, index) => (
-                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
-                  <div className="message-content">{msg.content}</div>
-                </div>
-              ))}
+              <ChatMessageList>
+                {chatHistory[activeModule].map((msg, index) => {
+                  const variant = msg.role === 'user' ? 'sent' : 'received';
+                  return (
+                    <ChatBubble key={index} variant={variant}>
+                      <ChatBubbleAvatar fallback={variant === 'sent' ? 'US' : 'AI'} />
+                      <ChatBubbleMessage>
+                        {msg.content}
+                      </ChatBubbleMessage>
+                      <ChatBubbleActionWrapper>
+                        {actionIcons.map(({ icon: Icon, type }) => (
+                          <ChatBubbleAction
+                            className="size-7"
+                            key={type}
+                            icon={<Icon className="size-4" />}
+                            onClick={() => console.log('Action ' + type + ' clicked for message ' + index)}
+                          />
+                        ))}
+                      </ChatBubbleActionWrapper>
+                    </ChatBubble>
+                  );
+                })}
+              </ChatMessageList>
             </div>
 
             <form
@@ -2609,11 +2781,29 @@ print("Activity history:", history)
             </div>
             
             <div className="chat-history">
-              {chatHistory[activeModule].map((msg, index) => (
-                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
-                  <div className="message-content">{msg.content}</div>
-                </div>
-              ))}
+              <ChatMessageList>
+                {chatHistory[activeModule].map((msg, index) => {
+                  const variant = msg.role === 'user' ? 'sent' : 'received';
+                  return (
+                    <ChatBubble key={index} variant={variant}>
+                      <ChatBubbleAvatar fallback={variant === 'sent' ? 'US' : 'AI'} />
+                      <ChatBubbleMessage>
+                        {msg.content}
+                      </ChatBubbleMessage>
+                      <ChatBubbleActionWrapper>
+                        {actionIcons.map(({ icon: Icon, type }) => (
+                          <ChatBubbleAction
+                            className="size-7"
+                            key={type}
+                            icon={<Icon className="size-4" />}
+                            onClick={() => console.log('Action ' + type + ' clicked for message ' + index)}
+                          />
+                        ))}
+                      </ChatBubbleActionWrapper>
+                    </ChatBubble>
+                  );
+                })}
+              </ChatMessageList>
             </div>
 
             <form
@@ -2679,7 +2869,7 @@ print("Activity history:", history)
 
     try {
       // 调用后端 API
-      const response = await axios.post('/api/v1/camel/chat', {
+      const response = await axios.post('/api/routes/camel/chat', {
         system_message: config.systemMessage,
         user_message: userInput,
         platform_type: config.platformType,
@@ -2698,7 +2888,7 @@ print("Activity history:", history)
       // 添加错误消息
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: '抱歉，发生了错误。请稍后再试。'
+        content: 'sorry, something went wrong.'
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -2706,6 +2896,52 @@ print("Activity history:", history)
       setUserInput('');
     }
   };
+
+  const handlePlatformChange = (value: ModelPlatformType) => {
+    setPlatformType(value);
+    // 根据平台类型设置默认模型
+    switch (value) {
+      case ModelPlatformType.OPENAI:
+        setModelType(ModelType.GPT_4);
+        break;
+      case ModelPlatformType.ANTHROPIC:
+        setModelType(ModelType.CLAUDE_2);
+        break;
+      case ModelPlatformType.MISTRALAI:
+        setModelType(ModelType.MISTRAL_7B);
+        break;
+      case ModelPlatformType.QWEN:
+        setModelType(ModelType.QWEN_72B);
+        break;
+      case ModelPlatformType.DEEPSEEK:
+        setModelType(ModelType.DEEPSEEK_67B);
+        break;
+    }
+  };
+
+  const handleModelChange = (value: ModelType) => {
+    setModelType(value);
+  };
+
+  const handleTemperatureChange = (value: string) => {
+    const temp = parseFloat(value);
+    if (!isNaN(temp) && temp >= 0 && temp <= 1) {
+      setTemperature(temp);
+    }
+  };
+
+  const handleMaxTokensChange = (value: string) => {
+    const tokens = parseInt(value);
+    if (!isNaN(tokens) && tokens > 0) {
+      setMaxTokens(tokens);
+    }
+  };
+
+  const actionIcons = [
+    { icon: Copy, type: 'copy' },
+    { icon: ThumbsUp, type: 'like' },
+    { icon: ThumbsDown, type: 'dislike' },
+  ];
 
   return (
     <div className="ai-playground-container">
@@ -2734,9 +2970,8 @@ print("Activity history:", history)
           
           <div className="layout">
             <ResizablePanelGroup direction="horizontal" className="flex-1">
-              {/* 左侧参数栏 */}
-              <ResizablePanel defaultSize={75} minSize={20}>
-                <div className="parameter-panel h-full">
+              <ResizablePanel defaultSize={75} minSize={40}>
+                <div className="parameter-panel">
                   {renderParameterPanel()}
                 </div>
               </ResizablePanel>
@@ -2744,9 +2979,9 @@ print("Activity history:", history)
               <ResizableHandle withHandle />
               
               {/* 右侧代码和响应区域 */}
-              <ResizablePanel defaultSize={75}>
+              <ResizablePanel defaultSize={105} minSize={30}>
                 <ResizablePanelGroup direction="vertical">
-                  <ResizablePanel defaultSize={40} minSize={30}>
+                  <ResizablePanel defaultSize={70} minSize={10}>
                     <div className="h-full overflow-auto p-4 bg-background">
                       {/* 代码区域 */}
                       <CodeBlock
@@ -2764,11 +2999,29 @@ print("Activity history:", history)
                       {/* 聊天响应区域 */}
                       <div className="chat-panel rounded-lg border bg-muted shadow-sm">
                         <div className="chat-history p-4 space-y-4">
-                          {chatHistory[activeModule].map((msg, index) => (
-                            <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
-                              <div className="message-content">{msg.content}</div>
-                            </div>
-                          ))}
+                          <ChatMessageList>
+                            {chatHistory[activeModule].map((msg, index) => {
+                              const variant = msg.role === 'user' ? 'sent' : 'received';
+                              return (
+                                <ChatBubble key={index} variant={variant}>
+                                  <ChatBubbleAvatar fallback={variant === 'sent' ? 'US' : 'AI'} />
+                                  <ChatBubbleMessage>
+                                    {msg.content}
+                                  </ChatBubbleMessage>
+                                  <ChatBubbleActionWrapper>
+                                    {actionIcons.map(({ icon: Icon, type }) => (
+                                      <ChatBubbleAction
+                                        className="size-7"
+                                        key={type}
+                                        icon={<Icon className="size-4" />}
+                                        onClick={() => console.log('Action ' + type + ' clicked for message ' + index)}
+                                      />
+                                    ))}
+                                  </ChatBubbleActionWrapper>
+                                </ChatBubble>
+                              );
+                            })}
+                          </ChatMessageList>
                         </div>
                         
                         <div className="border-t p-4">
