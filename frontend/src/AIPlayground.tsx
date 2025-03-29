@@ -268,12 +268,12 @@ const AIPlayground = () => {
     { id: 'Module6', title: 'Human-in-the-loop' }
   ];
 
-  const handleModuleChange = (module: string) => {
-    setActiveModule(module);
+  const handleModuleChange = (moduleId: string) => {
+    setActiveModule(moduleId);
     // 如果切换到的模块没有聊天记录，初始化一个空数组
     setChatHistory(prev => ({
       ...prev,
-      [module]: prev[module] || []
+      [moduleId]: prev[moduleId] || []
     }));
   };
 
@@ -2708,157 +2708,131 @@ print("Activity history:", history)
   };
 
   return (
-    
     <div className="ai-playground-container">
       <SidebarProvider>
-      {/* <AppSidebar /> */}
-      <SidebarInset>
-        
-        {/* <h1 className="title">CAMEL Agent Playground</h1> */}
-      
-      <div className="layout">
-        {/* 左侧模块切换按钮 */}
-        <div className="module-buttons">
-          {modules.map((module) => (
-            <Button
-              key={module.id}
-              className={`module-button ${activeModule === module.id ? 'active' : ''}`}
-              onClick={() => handleModuleChange(module.id)}
-            >
-              {module.title}
-            </Button>
-          ))}
-        </div>
-
-        <ResizablePanelGroup direction="horizontal" className="flex-1">
-          {/* 左侧参数栏 */}
-          <ResizablePanel defaultSize={75} minSize={20}>
-            <div className="parameter-panel h-full">
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    CAMEL Agent Playground
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-              {renderParameterPanel()}
+        <AppSidebar onModuleChange={handleModuleChange} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      CAMEL Agent Playground
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Create Your First Agent</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-          </ResizablePanel>
+          </header>
           
-          <ResizableHandle withHandle />
-          
-          {/* 右侧代码和响应区域 */}
-          <ResizablePanel defaultSize={75}>
-            <ResizablePanelGroup direction="vertical">
-              <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full overflow-auto p-4 bg-background">
-                  {/* 代码区域 */}
-                  <CodeBlock
-                    language="python"
-                    filename={`${activeModule}.py`}
-                    code={getModuleCode(activeModule) || ''}
-                  />
+          <div className="layout">
+            <ResizablePanelGroup direction="horizontal" className="flex-1">
+              {/* 左侧参数栏 */}
+              <ResizablePanel defaultSize={75} minSize={20}>
+                <div className="parameter-panel h-full">
+                  {renderParameterPanel()}
                 </div>
               </ResizablePanel>
               
               <ResizableHandle withHandle />
               
-              <ResizablePanel defaultSize={160}>
-                <div className="h-full overflow-auto p-4 bg-background">
-                  {/* 聊天响应区域 */}
-                  <div className="chat-panel rounded-lg border bg-muted shadow-sm">
-                    <div className="chat-history p-4 space-y-4">
-                      {chatHistory[activeModule].map((msg, index) => (
-                        <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
-                          <div className="message-content">{msg.content}</div>
-                        </div>
-                      ))}
+              {/* 右侧代码和响应区域 */}
+              <ResizablePanel defaultSize={75}>
+                <ResizablePanelGroup direction="vertical">
+                  <ResizablePanel defaultSize={40} minSize={30}>
+                    <div className="h-full overflow-auto p-4 bg-background">
+                      {/* 代码区域 */}
+                      <CodeBlock
+                        language="python"
+                        filename={`${activeModule}.py`}
+                        code={getModuleCode(activeModule) || ''}
+                      />
                     </div>
-                    
-                    <div className="border-t p-4">
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          handleSubmit();
-                        }}
-                        className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-1"
-                      >
-                        <ChatInput
-                          value={userMessage}
-                          onChange={(e) => setUserMessage(e.target.value)}
-                          placeholder={
-                            activeModule === 'Module1'
-                              ? "Ask anything..."
-                              : "Ask questions to the role-playing assistant..."
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
+                  </ResizablePanel>
+                  
+                  <ResizableHandle withHandle />
+                  
+                  <ResizablePanel defaultSize={160}>
+                    <div className="h-full overflow-auto p-4 bg-background">
+                      {/* 聊天响应区域 */}
+                      <div className="chat-panel rounded-lg border bg-muted shadow-sm">
+                        <div className="chat-history p-4 space-y-4">
+                          {chatHistory[activeModule].map((msg, index) => (
+                            <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
+                              <div className="message-content">{msg.content}</div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="border-t p-4">
+                          <form
+                            onSubmit={(e) => {
                               e.preventDefault();
                               handleSubmit();
-                            }
-                          }}
-                          className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
-                        />
-                        <div className="flex items-center p-3 pt-0">
-                          <Button variant="ghost" size="icon" type="button">
-                            <Paperclip className="size-4" />
-                            <span className="sr-only">Attachment</span>
-                          </Button>
-
-                          <Button variant="ghost" size="icon" type="button">
-                            <Mic className="size-4" />
-                            <span className="sr-only">Voice Input</span>
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            className="ml-auto gap-1.5"
-                            disabled={isLoading || !userMessage.trim()}
-                            type="submit"
+                            }}
+                            className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-1"
                           >
-                            {isLoading ? (
-                              <span className="loading-spinner"></span>
-                            ) : (
-                              <>
-                                Send Message
-                                <CornerDownLeft className="size-3.5" />
-                              </>
-                            )}
-                          </Button>
+                            <ChatInput
+                              value={userMessage}
+                              onChange={(e) => setUserMessage(e.target.value)}
+                              placeholder={
+                                activeModule === 'Module1'
+                                  ? "Ask anything..."
+                                  : "Ask questions to the role-playing assistant..."
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSubmit();
+                                }
+                              }}
+                              className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
+                            />
+                            <div className="flex items-center p-3 pt-0">
+                              <Button variant="ghost" size="icon" type="button">
+                                <Paperclip className="size-4" />
+                                <span className="sr-only">Attachment</span>
+                              </Button>
+
+                              <Button variant="ghost" size="icon" type="button">
+                                <Mic className="size-4" />
+                                <span className="sr-only">Voice Input</span>
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                className="ml-auto gap-1.5"
+                                disabled={isLoading || !userMessage.trim()}
+                                type="submit"
+                              >
+                                {isLoading ? (
+                                  <span className="loading-spinner"></span>
+                                ) : (
+                                  <>
+                                    Send Message
+                                    <CornerDownLeft className="size-3.5" />
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </form>
                         </div>
-                      </form>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </ResizablePanel>
             </ResizablePanelGroup>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-        {/* <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
           </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-        </div> */}
-      </SidebarInset>
-    </SidebarProvider>
-
-      
+        </SidebarInset>
+      </SidebarProvider>
     </div>
   );
 };

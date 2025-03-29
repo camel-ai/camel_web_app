@@ -27,7 +27,7 @@ import {
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
+    name: "camel",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
@@ -166,18 +166,46 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  onModuleChange?: (moduleId: string) => void;
+}
+
+const moduleIdMap = {
+  "Create Your First Agent": "Module1",
+  "Role Playing Session": "Module2",
+  "Workforce Session": "Module3",
+  "Synthetic Data": "Module4",
+  "RAG&Graph RAG": "Module5",
+  "Human-in-the-loop": "Module6"
+};
+
+export function AppSidebar({ onModuleChange, ...props }: AppSidebarProps) {
+  const handleItemClick = (title: string) => {
+    const moduleId = moduleIdMap[title];
+    if (moduleId && onModuleChange) {
+      onModuleChange(moduleId);
+    }
+  };
+
+  const navMainWithHandlers = data.navMain.map(section => ({
+    ...section,
+    items: section.items?.map(item => ({
+      ...item,
+      onClick: () => handleItemClick(item.title)
+    }))
+  }));
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMainWithHandlers} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {/* <NavUser user={data.user} /> */}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
