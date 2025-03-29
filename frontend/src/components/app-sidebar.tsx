@@ -10,6 +10,8 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Github,
+  BookText,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -180,6 +182,15 @@ const moduleIdMap = {
 };
 
 export function AppSidebar({ onModuleChange, ...props }: AppSidebarProps) {
+  const [starCount, setStarCount] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    fetch('https://api.github.com/repos/camel-ai/camel')
+      .then(response => response.json())
+      .then(data => setStarCount(data.stargazers_count))
+      .catch(error => console.error('Error fetching star count:', error));
+  }, []);
+
   const handleItemClick = (title: string) => {
     const moduleId = moduleIdMap[title];
     if (moduleId && onModuleChange) {
@@ -198,6 +209,9 @@ export function AppSidebar({ onModuleChange, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        <div className="flex items-center justify-left p-4">
+          <img src="/assets/images/camel-logo-purple.svg" alt="Camel Logo" className="h-8" />
+        </div>
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
@@ -205,6 +219,26 @@ export function AppSidebar({ onModuleChange, ...props }: AppSidebarProps) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
+        <div className="flex flex-col gap-2 p-4">
+          <a
+            href="https://github.com/camel-ai/camel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            <Github className="h-4 w-4" />
+            <span>GitHub Stars: {starCount}</span>
+          </a>
+          <a
+            href="https://docs.camel-ai.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            <BookText className="h-4 w-4" />
+            <span>Documentation</span>
+          </a>
+        </div>
         {/* <NavUser user={data.user} /> */}
       </SidebarFooter>
       <SidebarRail />

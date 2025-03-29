@@ -108,6 +108,22 @@ enum ModelType {
   DEEPSEEK_67B = "DEEPSEEK_67B"
 }
 
+interface HumanToolkitState {
+  enabled: boolean;
+  timeout: number;
+  defaultRisk: 'low' | 'medium' | 'high';
+}
+
+interface PlatformOption {
+  value: string;
+  label: string;
+}
+
+interface ModelOption {
+  value: string;
+  label: string;
+}
+
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
   const [platformType, setPlatformType] = useState<ModelPlatformType>(ModelPlatformType.OPENAI);
@@ -175,9 +191,10 @@ const AIPlayground = () => {
     Module4: [],
     Module5: []  // 添加Module5的初始化
   });
-  const [humanInteractionConfig, setHumanInteractionConfig] = useState({
-    timeout: 300,
-    defaultRisk: 'medium'
+  const [humanToolkit, setHumanToolkit] = useState<HumanToolkitState>({
+    enabled: false,
+    timeout: 60,
+    defaultRisk: 'low'
   });
   const [pendingApprovals, setPendingApprovals] = useState([
     {
@@ -283,11 +300,6 @@ const AIPlayground = () => {
     temperature: 0.4,
     maxTokens: 4096,
   });
-  const [humanToolkit, setHumanToolkit] = useState({
-    enabled: false,
-    timeout: 60,
-    defaultRisk: 'low'
-  });
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -307,12 +319,12 @@ const AIPlayground = () => {
     }));
   };
 
-  const platformOptions = [
-    { value: ModelPlatformType.OPENAI, label: 'OpenAI' },
-    { value: ModelPlatformType.ANTHROPIC, label: 'Anthropic' },
-    { value: ModelPlatformType.MISTRALAI, label: 'Mistral AI' },
-    { value: ModelPlatformType.QWEN, label: 'Qwen' },
-    { value: ModelPlatformType.DEEPSEEK, label: 'DeepSeek' },
+  const platformOptions: PlatformOption[] = [
+    { value: 'OPENAI', label: 'OpenAI' },
+    { value: 'MISTRALAI', label: 'MistralAI' },
+    { value: 'ANTHROPIC', label: 'Anthropic' },
+    { value: 'QWEN', label: 'Qwen' },
+    { value: 'DEEPSEEK', label: 'DeepSeek' }
   ];
 
   const modelOptions = {
@@ -2546,7 +2558,7 @@ print(response.msgs[0].content)`;
                 className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
               />
               <div className="flex items-center p-3 pt-0">
-                <Button variant="ghost" size="icon" type="button">
+                {/* <Button variant="ghost" size="icon" type="button">
                   <Paperclip className="size-4" />
                   <span className="sr-only">Attachment</span>
                 </Button>
@@ -2554,7 +2566,7 @@ print(response.msgs[0].content)`;
                 <Button variant="ghost" size="icon" type="button">
                   <Mic className="size-4" />
                   <span className="sr-only">Voice Input</span>
-                </Button>
+                </Button> */}
 
                 <Button
                   size="sm"
@@ -2630,7 +2642,7 @@ print(response.msgs[0].content)`;
                 className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
               />
               <div className="flex items-center p-3 pt-0">
-                <Button variant="ghost" size="icon" type="button">
+                {/* <Button variant="ghost" size="icon" type="button">
                   <Paperclip className="size-4" />
                   <span className="sr-only">Attachment</span>
                 </Button>
@@ -2638,7 +2650,7 @@ print(response.msgs[0].content)`;
                 <Button variant="ghost" size="icon" type="button">
                   <Mic className="size-4" />
                   <span className="sr-only">Voice Input</span>
-                </Button>
+                </Button> */}
 
                 <Button
                   size="sm"
@@ -2657,43 +2669,6 @@ print(response.msgs[0].content)`;
                 </Button>
               </div>
             </form>
-          </div>
-        )}
-
-        {activeModule === 'Module6' && (
-          <div className="chat-interface">
-            <div className="chat-title">
-              <h3>与AI助手对话</h3>
-              <p className="chat-hint">
-                AI助手会在需要时向你询问问题
-              </p>
-            </div>
-            
-            <div className="chat-history">
-              {chatHistory[activeModule]?.map((msg, index) => (
-                <div key={index} className={`chat-message ${msg.role} p-3 rounded-lg ${msg.role === 'user' ? 'bg-primary/10' : 'bg-muted'}`}>
-                  <div className="message-content">{msg.content}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="chat-input">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}>
-                <Input
-                  type="text"
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
-                  placeholder="输入你的消息..."
-                  className="chat-input-field"
-                />
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? '发送中...' : '发送'}
-                </Button>
-              </form>
-            </div>
           </div>
         )}
       </div>
@@ -2738,42 +2713,24 @@ print(response.msgs[0].content)`;
     }
   };
 
-  const handlePlatformChange = (value: ModelPlatformType) => {
-    setPlatformType(value);
-    // 根据平台类型设置默认模型
-    switch (value) {
-      case ModelPlatformType.OPENAI:
-        setModelType(ModelType.GPT_4);
-        break;
-      case ModelPlatformType.ANTHROPIC:
-        setModelType(ModelType.CLAUDE_2);
-        break;
-      case ModelPlatformType.MISTRALAI:
-        setModelType(ModelType.MISTRAL_7B);
-        break;
-      case ModelPlatformType.QWEN:
-        setModelType(ModelType.QWEN_72B);
-        break;
-      case ModelPlatformType.DEEPSEEK:
-        setModelType(ModelType.DEEPSEEK_67B);
-        break;
-    }
+  const handlePlatformChange = (value: string) => {
+    setPlatformType(value as ModelPlatformType);
   };
 
-  const handleModelChange = (value: ModelType) => {
-    setModelType(value);
+  const handleModelChange = (value: string) => {
+    setModelType(value as ModelType);
   };
 
   const handleTemperatureChange = (value: string) => {
     const temp = parseFloat(value);
-    if (!isNaN(temp) && temp >= 0 && temp <= 1) {
+    if (!isNaN(temp)) {
       setTemperature(temp);
     }
   };
 
   const handleMaxTokensChange = (value: string) => {
     const tokens = parseInt(value);
-    if (!isNaN(tokens) && tokens > 0) {
+    if (!isNaN(tokens)) {
       setMaxTokens(tokens);
     }
   };
@@ -2890,7 +2847,7 @@ print(response.msgs[0].content)`;
                               className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
                             />
                             <div className="flex items-center p-3 pt-0">
-                              <Button variant="ghost" size="icon" type="button">
+                              {/* <Button variant="ghost" size="icon" type="button">
                                 <Paperclip className="size-4" />
                                 <span className="sr-only">Attachment</span>
                               </Button>
@@ -2898,7 +2855,7 @@ print(response.msgs[0].content)`;
                               <Button variant="ghost" size="icon" type="button">
                                 <Mic className="size-4" />
                                 <span className="sr-only">Voice Input</span>
-                              </Button>
+                              </Button> */}
 
                               <Button
                                 size="sm"
