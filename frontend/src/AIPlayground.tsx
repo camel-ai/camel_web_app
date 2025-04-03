@@ -70,6 +70,7 @@ import {
 import { CodeEditor } from "@/components/ui/code-editor"
 import axios from 'axios';
 import { ChatMessageList } from '@/components/ui/chat/chat-message-list'
+import { toolService } from './services/toolService';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -101,27 +102,21 @@ enum ModelType {
   GPT_4 = "GPT_4",
   GPT_35_TURBO = "GPT_35_TURBO",
   CLAUDE_2 = "CLAUDE_2",
-  CLAUDE_INSTANT = "CLAUDE_INSTANT",
-  MISTRAL_7B = "MISTRAL_7B",
-  MIXTRAL_8X7B = "MIXTRAL_8X7B",
-  QWEN_72B = "QWEN_72B",
-  DEEPSEEK_67B = "DEEPSEEK_67B"
+  DEEPSEEK_CHAT = "DEEPSEEK_CHAT"
 }
 
-interface HumanToolkitState {
-  enabled: boolean;
-  timeout: number;
-  defaultRisk: 'low' | 'medium' | 'high';
+interface ToolkitState {
+  [key: string]: boolean;
 }
 
-interface PlatformOption {
-  value: string;
-  label: string;
-}
-
-interface ModelOption {
-  value: string;
-  label: string;
+interface Agent {
+  id: number;
+  type: 'single' | 'pair';
+  name: string;
+  systemMessage: string;
+  assistantRole: string;
+  userRole: string;
+  tools: string[];
 }
 
 const AIPlayground = () => {
@@ -130,6 +125,7 @@ const AIPlayground = () => {
   const [modelType, setModelType] = useState<ModelType>(ModelType.GPT_4);
   const [temperature, setTemperature] = useState<number>(0.7);
   const [maxTokens, setMaxTokens] = useState<number>(2000);
+  const [baseUrl, setBaseUrl] = useState<string>(''); // 添加 baseUrl 状态
   const [apiKey, setApiKey] = useState('');
   const [systemMessage, setSystemMessage] = useState('');
   const [userMessage, setUserMessage] = useState('');
@@ -145,7 +141,7 @@ const AIPlayground = () => {
   const [workforceName, setWorkforceName] = useState('');
   const [workforceDesc, setWorkforceDesc] = useState('');
   const [taskDefinition, setTaskDefinition] = useState('');
-  const [agents, setAgents] = useState([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [coordinationStrategy, setCoordinationStrategy] = useState('sequential');
   const [documentSource, setDocumentSource] = useState('');
   const [embeddingModel, setEmbeddingModel] = useState('text-embedding-3-small');
@@ -191,10 +187,9 @@ const AIPlayground = () => {
     Module4: [],
     Module5: []  // 添加Module5的初始化
   });
-  const [humanToolkit, setHumanToolkit] = useState<HumanToolkitState>({
-    enabled: false,
-    timeout: 60,
-    defaultRisk: 'low'
+  const [humanInteractionConfig, setHumanInteractionConfig] = useState({
+    timeout: 300,
+    defaultRisk: 'medium'
   });
   const [pendingApprovals, setPendingApprovals] = useState([
     {
@@ -242,47 +237,12 @@ const AIPlayground = () => {
   const [plannerConfig, setPlannerConfig] = useState({
     systemMessage: "Expert at creating detailed tour plans"
   });
-  const [selectedTools, setSelectedTools] = useState({
-    search: true,
-    weather: true,
-    maps: true,
-    math: false,
-    twitter: false,
-    retrieval: false,
-    slack: false,
-    linkedin: false,
-    reddit: false,
-  });
-  const [assistantSelectedToolkits, setAssistantSelectedToolkits] = useState(
-    {
-      search: true,
-      weather: true,
-      maps: true,
-      math: false,
-      twitter: false,
-      retrieval: false,
-      slack: false,
-      linkedin: false,
-      reddit: false,
-    }
-  );
-  const [userSelectedToolkits, setUserSelectedToolkits] = useState(
-    {
-      search: true,
-      weather: true,
-      maps: true,
-      math: false,
-      twitter: false,
-      retrieval: false,
-      slack: false,
-      linkedin: false,
-      reddit: false,
-    }
-  );
+  const [selectedTools, setSelectedTools] = useState<ToolkitState>({});
+  const [assistantSelectedToolkits, setAssistantSelectedToolkits] = useState<ToolkitState>({});
+  const [userSelectedToolkits, setUserSelectedToolkits] = useState<ToolkitState>({});
   const [taskId, setTaskId] = useState('task_001');
   const [workflowProgress, setWorkflowProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
   const [toolkits, setToolkits] = useState([]);
   const [useCustomModel, setUseCustomModel] = useState(false);
   const [apiType, setApiType] = useState('camel'); // 用于选择 API 类型
@@ -300,6 +260,7 @@ const AIPlayground = () => {
     temperature: 0.4,
     maxTokens: 4096,
   });
+  const [availableTools, setAvailableTools] = useState<string[]>([]);
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -319,12 +280,12 @@ const AIPlayground = () => {
     }));
   };
 
-  const platformOptions: PlatformOption[] = [
-    { value: 'OPENAI', label: 'OpenAI' },
-    { value: 'MISTRALAI', label: 'MistralAI' },
-    { value: 'ANTHROPIC', label: 'Anthropic' },
-    { value: 'QWEN', label: 'Qwen' },
-    { value: 'DEEPSEEK', label: 'DeepSeek' }
+  const platformOptions = [
+    { value: ModelPlatformType.OPENAI, label: 'OpenAI' },
+    { value: ModelPlatformType.ANTHROPIC, label: 'Anthropic' },
+    { value: ModelPlatformType.MISTRALAI, label: 'Mistral AI' },
+    { value: ModelPlatformType.QWEN, label: 'Qwen' },
+    { value: ModelPlatformType.DEEPSEEK, label: 'DeepSeek' },
   ];
 
   const modelOptions = {
@@ -642,37 +603,108 @@ print(combined_results)
 `;
 
       case 'Module6':
-        return `from camel.agents import ChatAgent
+        return `from camel.human import HumanLayer
+from camel.agents import ChatAgent
 from camel.models import ModelFactory
 from camel.types import ModelPlatformType, ModelType
-from camel.toolkits import HumanToolkit
+from camel.configs import HumanInteractionConfig
 
-# 初始化模型
+# 1. Initialize Human Layer with configured settings
+human_layer = HumanLayer(
+    api_key="${humanLayerKey}",  # From API Configuration
+    notification_settings={
+        "email": ${notificationSettings.email},  # From Notification Settings
+        "browser": ${notificationSettings.browser},
+        "slack": ${notificationSettings.slack}
+    }
+)
+
+# 2. Configure human interaction settings
+interaction_config = HumanInteractionConfig(
+    timeout_seconds=${humanInteractionConfig.timeout},  # From Human Interaction Settings
+    default_risk_level="${humanInteractionConfig.defaultRisk}"
+)
+
+# 3. Initialize AI model with human-in-the-loop capabilities
 model = ModelFactory.create(
     model_platform=ModelPlatformType.${platformType},
-    model_type=ModelType.${modelType},
-    temperature=${temperature},
-    max_tokens=${maxTokens}
+    model_type=ModelType.${modelType}
 )
 
-# 初始化人机交互工具包
-human_toolkit = HumanToolkit(
-    timeout_seconds=${humanToolkit.timeout}
-)
-
-# 创建带有人机交互能力的Agent
 agent = ChatAgent(
     model=model,
-    system_message="${systemMessage || '我是一个能够与人类进行交互的AI助手'}",
-    tools=[*human_toolkit.get_tools()] if ${humanToolkit.enabled} else []
+    human_layer=human_layer,
+    interaction_config=interaction_config
 )
 
-# 开始对话
-response = agent.step("${userMessage || '你好,我需要你的帮助'}")
-print(response.msgs[0].content)`;
+# 4. Current pending approvals (from Pending Approvals section)
+pending_approvals = [
+    ${pendingApprovals.map(item => `{
+        "id": "${item.id}",
+        "tool": "${item.tool}",
+        "risk": "${item.risk}",
+        "description": "${item.description}",
+        "context": {
+            "purpose": "${item.context.purpose}",
+            "impact": "${item.context.impact}"
+        }
+    }`).join(',\n    ')}
+]
+
+# 5. Recent activity log (from Recent Activity section)
+activity_history = [
+    ${recentActivity.map(activity => `{
+        "id": "${activity.id}",
+        "type": "${activity.type}",
+        "timestamp": "${activity.timestamp}",
+        "description": "${activity.description}"
+    }`).join(',\n    ')}
+]
+
+# Example usage of human-in-the-loop functionality
+def execute_with_approval(action, data, risk_level=None):
+    """Execute action with human approval based on risk level."""
+    risk = risk_level or interaction_config.default_risk_level
+    
+    # Request human approval
+    approval_request = human_layer.request_approval(
+        action=action,
+        data=data,
+        risk_level=risk,
+        context={
+            "purpose": "Sensitive operation execution",
+            "impact": f"{risk.capitalize()} risk operation",
+            "requested_by": "AI Agent",
+            "timestamp": "${new Date().toISOString()}"
+        }
+    )
+    
+    if approval_request.approved:
+        return f"Executing {action} with approved data: {data}"
+    else:
+        return f"Operation {action} was rejected by human supervisor"
+
+# Example workflow
+response = agent.step("I need to perform a sensitive operation.")
+print("Agent response:", response.content)
+
+# Request human approval for a sensitive operation
+result = execute_with_approval(
+    action="access_sensitive_data",
+    data="user_records.db",
+    risk_level="high"
+)
+print("Operation result:", result)
+
+# Get current approval status and history
+pending = human_layer.get_pending_approvals()
+history = human_layer.get_activity_history()
+print("Pending approvals:", pending)
+print("Activity history:", history)
+`;
 
       default:
-        return getModuleCode(activeModule);
+        return '';
     }
   };
 
@@ -689,7 +721,7 @@ print(response.msgs[0].content)`;
 
   const callLLMAPI = async (message: string, config: AgentConfig) => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || '';
-    const API_PATH = '/api/routes/camel/chat';
+    const API_PATH = '/api/v1/camel/chat';
     const fullUrl = `${API_BASE_URL}${API_PATH}`;
 
     console.log('正在发送请求到API...');
@@ -752,7 +784,7 @@ print(response.msgs[0].content)`;
         ...prev,
         [activeModule]: [...prev[activeModule], {
           role: 'assistant',
-          content: 'please input api key and user message'
+          content: '请输入 API Key 和用户消息'
         }]
       }));
       return;
@@ -769,35 +801,48 @@ print(response.msgs[0].content)`;
       setUserMessage('');
 
       // 准备 API 配置
-      const config: AgentConfig = {
+      const apiConfig: AgentConfig = {
         systemMessage: systemMessage || 'You are a helpful AI assistant.',
-        platformType: ModelPlatformType.DEEPSEEK,
-        modelType: ModelType.DeepSeek-Chat,
-        temperature: 0.4,
-        maxTokens: 4096,
-        baseUrl: undefined
+        platformType: platformType,
+        modelType: modelType,
+        temperature: temperature,
+        maxTokens: maxTokens,
+        baseUrl: baseUrl || undefined
       };
 
+      console.log('Sending request with config:', apiConfig); // 添加日志
+
       // 调用 LLM API
-      const response = await callLLMAPI(userMessage, config);
+      const response = await axios.post('http://app.camel-ai.org/api/v1/camel/chat', {
+        system_message: apiConfig.systemMessage,
+        user_message: userMessage,
+        platform_type: apiConfig.platformType,
+        model_type: apiConfig.modelType,
+        base_url: apiConfig.baseUrl,
+        temperature: apiConfig.temperature,
+        max_tokens: apiConfig.maxTokens,
+        api_key: apiKey
+      });
+
+      console.log('Response received:', response.data); // 添加日志
 
       // 更新聊天历史
       setChatHistory(prev => ({
         ...prev,
         [activeModule]: [...prev[activeModule], {
-          role: response.role,
-          content: response.content
+          role: 'assistant',
+          content: response.data.content
         }]
       }));
 
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('Error details:', error.response?.data || error); // 添加详细错误日志
       // 显示错误消息
       setChatHistory(prev => ({
         ...prev,
         [activeModule]: [...prev[activeModule], {
           role: 'assistant',
-          content: 'Sorry, something went wrong:' + (error.response?.data?.detail || error.message || 'unknown error')
+          content: 'sorry, something went wrong:' + (error.response?.data?.detail || error.message || 'unknown error')
         }]
       }));
     } finally {
@@ -822,8 +867,8 @@ print(response.msgs[0].content)`;
     { value: 'Korean', label: '한국어' },
   ];
 
-  const handleAddAgent = (type) => {
-    const newAgent = {
+  const handleAddAgent = (type: 'single' | 'pair') => {
+    const newAgent: Agent = {
       id: Date.now(),
       type: type,
       name: '',
@@ -835,26 +880,35 @@ print(response.msgs[0].content)`;
     setAgents(prev => [...prev, newAgent]);
   };
 
-  const handleRemoveAgent = (index) => {
+  const handleRemoveAgent = (index: number) => {
     setAgents(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpdateAgent = (index, field, value) => {
+  const handleUpdateAgent = (index: number, field: keyof Agent, value: string) => {
     setAgents(prev => prev.map((agent, i) => 
       i === index ? { ...agent, [field]: value } : agent
     ));
   };
 
-  const handleToolToggle = (agentIndex, tool, checked) => {
-    setAgents(prev => prev.map((agent, i) => {
-      if (i === agentIndex) {
-        const tools = checked 
-          ? [...agent.tools, tool]
-          : agent.tools.filter(t => t !== tool);
-        return { ...agent, tools };
+  const handleToolToggle = async (agentIndex: number, toolName: string, checked: boolean) => {
+    try {
+      if (checked) {
+        // 获取工具信息
+        await toolService.getToolInfo(toolName);
       }
-      return agent;
-    }));
+      
+      setAgents(prev => prev.map((agent, i) => {
+        if (i === agentIndex) {
+          const tools = checked 
+            ? [...agent.tools, toolName]
+            : agent.tools.filter(t => t !== toolName);
+          return { ...agent, tools };
+        }
+        return agent;
+      }));
+    } catch (error) {
+      console.error(`Error toggling tool ${toolName}:`, error);
+    }
   };
 
   const handleApproval = (id, action) => {
@@ -1056,6 +1110,18 @@ print(response.msgs[0].content)`;
                       value={modelType}
                       onChange={(e) => setModelType(e.target.value)}
                       placeholder="Enter model name"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <Label htmlFor="baseUrl">base_url</Label>
+                    <Input
+                      type="text"
+                      id="baseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base URL"
                       className="short-input"
                     />
                   </div>
@@ -1402,6 +1468,18 @@ print(response.msgs[0].content)`;
                       className="short-input"
                     />
                   </div>
+
+                  <div className="form-group">
+                    <Label htmlFor="baseUrl">base_url</Label>
+                    <Input
+                      type="text"
+                      id="baseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base URL"
+                      className="short-input"
+                    />
+                  </div>
                 </>
               )}
 
@@ -1694,6 +1772,18 @@ print(response.msgs[0].content)`;
                       value={modelType}
                       onChange={(e) => setModelType(e.target.value)}
                       placeholder="Enter model name"
+                      className="short-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <Label htmlFor="baseUrl">base_url</Label>
+                    <Input
+                      type="text"
+                      id="baseUrl"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Enter base URL"
                       className="short-input"
                     />
                   </div>
@@ -2331,34 +2421,164 @@ print(response.msgs[0].content)`;
         );
       
       case 'Module6':
-        return `from camel.agents import ChatAgent
-from camel.models import ModelFactory
-from camel.types import ModelPlatformType, ModelType
-from camel.toolkits import HumanToolkit
+        return (
+          <div className="module-content">
+            <div className="card">
+              <h3>Human-in-the-loop Configuration</h3>
+              <p>Configure human interaction and approval settings.</p>
+            </div>
 
-# 初始化模型
-model = ModelFactory.create(
-    model_platform=ModelPlatformType.${platformType},
-    model_type=ModelType.${modelType},
-    temperature=${temperature},
-    max_tokens=${maxTokens}
-)
+            <div className="form">
+              {/* API Configuration */}
+              <div className="section-title">API Configuration</div>
+              <div className="form-group">
+                <Label>HumanLayer API Key</Label>
+                <Input
+                  type="password"
+                  value={humanLayerKey}
+                  onChange={(e) => setHumanLayerKey(e.target.value)}
+                  placeholder="Enter HumanLayer API key"
+                  className="short-input"
+                />
+              </div>
 
-# 初始化人机交互工具包
-human_toolkit = HumanToolkit(
-    timeout_seconds=${humanToolkit.timeout}
-)
+              {/* Human Interaction Settings */}
+              <div className="section-title">Human Interaction Settings</div>
+              <div className="form-group">
+                <Label>Response Timeout (seconds)</Label>
+                <Input
+                  type="number"
+                  value={humanInteractionConfig.timeout}
+                  onChange={(e) => setHumanInteractionConfig(prev => ({
+                    ...prev,
+                    timeout: Number(e.target.value)
+                  }))}
+                  min="30"
+                  max="3600"
+                  className="short-input"
+                />
+              </div>
 
-# 创建带有人机交互能力的Agent
-agent = ChatAgent(
-    model=model,
-    system_message="${systemMessage || '我是一个能够与人类进行交互的AI助手'}",
-    tools=[*human_toolkit.get_tools()] if ${humanToolkit.enabled} else []
-)
+              <div className="form-group">
+                <Label>Default Risk Level</Label>
+                <select
+                  value={humanInteractionConfig.defaultRisk}
+                  onChange={(e) => setHumanInteractionConfig(prev => ({
+                    ...prev,
+                    defaultRisk: e.target.value
+                  }))}
+                >
+                  <option value="low">Low Risk</option>
+                  <option value="medium">Medium Risk</option>
+                  <option value="high">High Risk</option>
+                </select>
+              </div>
 
-# 开始对话
-response = agent.step("${userMessage || '你好,我需要你的帮助'}")
-print(response.msgs[0].content)`;
+              {/* Notification Settings */}
+              <div className="section-title">Notification Settings</div>
+              <div className="notification-options">
+                <Label className="checkbox-label">
+                  <Input
+                    type="checkbox"
+                    checked={notificationSettings.email}
+                    onChange={(e) => setNotificationSettings(prev => ({
+                      ...prev,
+                      email: e.target.checked
+                    }))}
+                  />
+                  Email Notifications
+                </Label>
+
+                <Label className="checkbox-label">
+                  <Input
+                    type="checkbox"
+                    checked={notificationSettings.browser}
+                    onChange={(e) => setNotificationSettings(prev => ({
+                      ...prev,
+                      browser: e.target.checked
+                    }))}
+                  />
+                  Browser Notifications
+                </Label>
+
+                <Label className="checkbox-label">
+                  <Input
+                    type="checkbox"
+                    checked={notificationSettings.slack}
+                    onChange={(e) => setNotificationSettings(prev => ({
+                      ...prev,
+                      slack: e.target.checked
+                    }))}
+                  />
+                  Slack Notifications
+                </Label>
+              </div>
+
+              {/* Pending Approvals */}
+              <div className="section-title">Pending Approvals</div>
+              <div className="approval-list">
+                {pendingApprovals.map((item) => (
+                  <div key={item.id} className="approval-request">
+                    <div className="request-header">
+                      <span className="tool-name">{item.tool}</span>
+                      <span className={`risk-badge ${item.risk}`}>{item.risk} risk</span>
+                    </div>
+                    <div className="request-content">
+                      <p>{item.description}</p>
+                      <div className="context-info">
+                        <span>Requested by: {item.requestedBy}</span>
+                        <span>Time: {item.timestamp}</span>
+                      </div>
+                      <div className="additional-context">
+                        <div className="context-item">
+                          <span className="context-label">Purpose:</span>
+                          <span>{item.context.purpose}</span>
+                        </div>
+                        <div className="context-item">
+                          <span className="context-label">Impact:</span>
+                          <span>{item.context.impact}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="action-buttons">
+                      <Button 
+                        className="approve-btn"
+                        onClick={() => handleApproval(item.id, 'approve')}
+                      >
+                        Approve
+                      </Button>
+                      <Button 
+                        className="reject-btn"
+                        onClick={() => handleApproval(item.id, 'reject')}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent Activity */}
+              <div className="section-title">Recent Activity</div>
+              <div className="activity-list">
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="activity-item">
+                    <div className="activity-icon">
+                      {activity.type === 'approval' ? '✓' : activity.type === 'rejection' ? '✗' : '!'}
+                    </div>
+                    <div className="activity-content">
+                      <div className="activity-header">
+                        <span className="activity-type">{activity.type}</span>
+                        <span className="activity-time">{activity.timestamp}</span>
+                      </div>
+                      <p className="activity-description">{activity.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
 
       default:
         return getModuleCode(activeModule);
@@ -2685,7 +2905,7 @@ print(response.msgs[0].content)`;
 
     try {
       // 调用后端 API
-      const response = await axios.post('/api/routes/camel/chat', {
+      const response = await axios.post('/api/v1/camel/chat', {
         system_message: config.systemMessage,
         user_message: userInput,
         platform_type: config.platformType,
@@ -2713,24 +2933,42 @@ print(response.msgs[0].content)`;
     }
   };
 
-  const handlePlatformChange = (value: string) => {
-    setPlatformType(value as ModelPlatformType);
+  const handlePlatformChange = (value: ModelPlatformType) => {
+    setPlatformType(value);
+    // 根据平台类型设置默认模型
+    switch (value) {
+      case ModelPlatformType.OPENAI:
+        setModelType(ModelType.GPT_4);
+        break;
+      case ModelPlatformType.ANTHROPIC:
+        setModelType(ModelType.CLAUDE_2);
+        break;
+      case ModelPlatformType.MISTRALAI:
+        setModelType(ModelType.MISTRAL_7B);
+        break;
+      case ModelPlatformType.QWEN:
+        setModelType(ModelType.QWEN_72B);
+        break;
+      case ModelPlatformType.DEEPSEEK:
+        setModelType(ModelType.DEEPSEEK_67B);
+        break;
+    }
   };
 
-  const handleModelChange = (value: string) => {
-    setModelType(value as ModelType);
+  const handleModelChange = (value: ModelType) => {
+    setModelType(value);
   };
 
   const handleTemperatureChange = (value: string) => {
     const temp = parseFloat(value);
-    if (!isNaN(temp)) {
+    if (!isNaN(temp) && temp >= 0 && temp <= 1) {
       setTemperature(temp);
     }
   };
 
   const handleMaxTokensChange = (value: string) => {
     const tokens = parseInt(value);
-    if (!isNaN(tokens)) {
+    if (!isNaN(tokens) && tokens > 0) {
       setMaxTokens(tokens);
     }
   };
@@ -2740,6 +2978,41 @@ print(response.msgs[0].content)`;
     { icon: ThumbsUp, type: 'like' },
     { icon: ThumbsDown, type: 'dislike' },
   ];
+
+  useEffect(() => {
+    // 获取可用工具列表
+    const fetchTools = async () => {
+      try {
+        const tools = await toolService.getAvailableTools();
+        setAvailableTools(tools);
+        
+        // 初始化工具选择状态
+        const initialState = tools.reduce((acc, tool) => ({
+          ...acc,
+          [tool]: false
+        }), {});
+        
+        setSelectedTools(initialState);
+        setAssistantSelectedToolkits(initialState);
+        setUserSelectedToolkits(initialState);
+      } catch (error) {
+        console.error('Error fetching tools:', error);
+      }
+    };
+    
+    fetchTools();
+  }, []);
+
+  // 在工具使用时调用后端API
+  const executeToolkit = async (toolName: string, params: Record<string, any>) => {
+    try {
+      const response = await toolService.executeToolkit(toolName, params);
+      return response.result;
+    } catch (error) {
+      console.error(`Error executing tool ${toolName}:`, error);
+      throw error;
+    }
+  };
 
   return (
     <div className="ai-playground-container">
