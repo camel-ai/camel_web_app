@@ -70,7 +70,6 @@ import {
 import { CodeEditor } from "@/components/ui/code-editor"
 import axios from 'axios';
 import { ChatMessageList } from '@/components/ui/chat/chat-message-list'
-import { toolService } from './services/toolService';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -105,20 +104,6 @@ enum ModelType {
   DEEPSEEK_CHAT = "DEEPSEEK_CHAT"
 }
 
-interface ToolkitState {
-  [key: string]: boolean;
-}
-
-interface Agent {
-  id: number;
-  type: 'single' | 'pair';
-  name: string;
-  systemMessage: string;
-  assistantRole: string;
-  userRole: string;
-  tools: string[];
-}
-
 const AIPlayground = () => {
   const [activeModule, setActiveModule] = useState('Module1'); // 默认模块
   const [platformType, setPlatformType] = useState<ModelPlatformType>(ModelPlatformType.OPENAI);
@@ -141,7 +126,7 @@ const AIPlayground = () => {
   const [workforceName, setWorkforceName] = useState('');
   const [workforceDesc, setWorkforceDesc] = useState('');
   const [taskDefinition, setTaskDefinition] = useState('');
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState([]);
   const [coordinationStrategy, setCoordinationStrategy] = useState('sequential');
   const [documentSource, setDocumentSource] = useState('');
   const [embeddingModel, setEmbeddingModel] = useState('text-embedding-3-small');
@@ -237,9 +222,43 @@ const AIPlayground = () => {
   const [plannerConfig, setPlannerConfig] = useState({
     systemMessage: "Expert at creating detailed tour plans"
   });
-  const [selectedTools, setSelectedTools] = useState<ToolkitState>({});
-  const [assistantSelectedToolkits, setAssistantSelectedToolkits] = useState<ToolkitState>({});
-  const [userSelectedToolkits, setUserSelectedToolkits] = useState<ToolkitState>({});
+  const [selectedTools, setSelectedTools] = useState({
+    search: true,
+    weather: true,
+    maps: true,
+    math: false,
+    twitter: false,
+    retrieval: false,
+    slack: false,
+    linkedin: false,
+    reddit: false,
+  });
+  const [assistantSelectedToolkits, setAssistantSelectedToolkits] = useState(
+    {
+      search: true,
+      weather: true,
+      maps: true,
+      math: false,
+      twitter: false,
+      retrieval: false,
+      slack: false,
+      linkedin: false,
+      reddit: false,
+    }
+  );
+  const [userSelectedToolkits, setUserSelectedToolkits] = useState(
+    {
+      search: true,
+      weather: true,
+      maps: true,
+      math: false,
+      twitter: false,
+      retrieval: false,
+      slack: false,
+      linkedin: false,
+      reddit: false,
+    }
+  );
   const [taskId, setTaskId] = useState('task_001');
   const [workflowProgress, setWorkflowProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
@@ -260,7 +279,6 @@ const AIPlayground = () => {
     temperature: 0.4,
     maxTokens: 4096,
   });
-  const [availableTools, setAvailableTools] = useState<string[]>([]);
 
   const modules = [
     { id: 'Module1', title: 'Create Your First Agent' },
@@ -810,10 +828,10 @@ print("Activity history:", history)
         baseUrl: baseUrl || undefined
       };
 
-      console.log('Sending request with config:', apiConfig); // 添加日志
+      console.log('Sending request with config:', apiConfig);
+      console.log('Full request payload:', { ...apiConfig, api_key: apiKey });
 
-      // 调用 LLM API
-      const response = await axios.post('http://app.camel-ai.org/api/v1/camel/chat', {
+      const response = await axios.post('https://api.app.camel-ai.org/api/v1/camel/chat', {
         system_message: apiConfig.systemMessage,
         user_message: userMessage,
         platform_type: apiConfig.platformType,
@@ -824,7 +842,7 @@ print("Activity history:", history)
         api_key: apiKey
       });
 
-      console.log('Response received:', response.data); // 添加日志
+      console.log('Response received:', response.data);
 
       // 更新聊天历史
       setChatHistory(prev => ({
@@ -867,8 +885,8 @@ print("Activity history:", history)
     { value: 'Korean', label: '한국어' },
   ];
 
-  const handleAddAgent = (type: 'single' | 'pair') => {
-    const newAgent: Agent = {
+  const handleAddAgent = (type) => {
+    const newAgent = {
       id: Date.now(),
       type: type,
       name: '',
@@ -880,35 +898,26 @@ print("Activity history:", history)
     setAgents(prev => [...prev, newAgent]);
   };
 
-  const handleRemoveAgent = (index: number) => {
+  const handleRemoveAgent = (index) => {
     setAgents(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpdateAgent = (index: number, field: keyof Agent, value: string) => {
+  const handleUpdateAgent = (index, field, value) => {
     setAgents(prev => prev.map((agent, i) => 
       i === index ? { ...agent, [field]: value } : agent
     ));
   };
 
-  const handleToolToggle = async (agentIndex: number, toolName: string, checked: boolean) => {
-    try {
-      if (checked) {
-        // 获取工具信息
-        await toolService.getToolInfo(toolName);
+  const handleToolToggle = (agentIndex, tool, checked) => {
+    setAgents(prev => prev.map((agent, i) => {
+      if (i === agentIndex) {
+        const tools = checked 
+          ? [...agent.tools, tool]
+          : agent.tools.filter(t => t !== tool);
+        return { ...agent, tools };
       }
-      
-      setAgents(prev => prev.map((agent, i) => {
-        if (i === agentIndex) {
-          const tools = checked 
-            ? [...agent.tools, toolName]
-            : agent.tools.filter(t => t !== toolName);
-          return { ...agent, tools };
-        }
-        return agent;
-      }));
-    } catch (error) {
-      console.error(`Error toggling tool ${toolName}:`, error);
-    }
+      return agent;
+    }));
   };
 
   const handleApproval = (id, action) => {
@@ -2978,41 +2987,6 @@ print("Activity history:", history)
     { icon: ThumbsUp, type: 'like' },
     { icon: ThumbsDown, type: 'dislike' },
   ];
-
-  useEffect(() => {
-    // 获取可用工具列表
-    const fetchTools = async () => {
-      try {
-        const tools = await toolService.getAvailableTools();
-        setAvailableTools(tools);
-        
-        // 初始化工具选择状态
-        const initialState = tools.reduce((acc, tool) => ({
-          ...acc,
-          [tool]: false
-        }), {});
-        
-        setSelectedTools(initialState);
-        setAssistantSelectedToolkits(initialState);
-        setUserSelectedToolkits(initialState);
-      } catch (error) {
-        console.error('Error fetching tools:', error);
-      }
-    };
-    
-    fetchTools();
-  }, []);
-
-  // 在工具使用时调用后端API
-  const executeToolkit = async (toolName: string, params: Record<string, any>) => {
-    try {
-      const response = await toolService.executeToolkit(toolName, params);
-      return response.result;
-    } catch (error) {
-      console.error(`Error executing tool ${toolName}:`, error);
-      throw error;
-    }
-  };
 
   return (
     <div className="ai-playground-container">

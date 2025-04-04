@@ -11,9 +11,9 @@ router = APIRouter()
 class AgentRequest(BaseModel):
     system_message: str
     user_message: str
-    platform_type: str = "DEEPSEEK"
-    model_type: str = "DeepSeek-Chat"
-    base_url: Optional[str] = "https://api.deepseek.com"
+    platform_type: str
+    model_type: str
+    base_url: Optional[str] = None
     api_key: str
     temperature: float = 0.7
     max_tokens: int = 2000

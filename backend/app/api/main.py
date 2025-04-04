@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import (
+from routes import (
     settings,
     rag,
     workflow,
